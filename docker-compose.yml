@@ -1,0 +1,146 @@
+# ============================================
+# BSides Toronto — Agentic SOC Demo Lab
+# ============================================
+# Stack: Splunk Enterprise, n8n, TheHive5, MCP Server
+# LLM: DeepSeek v4 Pro (external API)
+# Playbooks: OKF format (mounted volume)
+# ============================================
+
+services:
+
+  # ---- SIEM: Splunk Enterprise ----
+  splunk:
+    image: splunk/splunk:latest
+    platform: linux/amd64
+    container_name: lab-splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_GENERAL_TERMS=--accept-sgt-current-at-splunk-com
+      - SPLUNK_PASSWORD=${SPLUNK_PASSWORD:-BsidesLab1!}
+      - SPLUNK_HEC_TOKEN=${SPLUNK_HEC_TOKEN:-abcd1234-abcd-1234-abcd-1234abcd1234}
+      - SPLUNK_HEC_SSL=false
+    ports:
+      - "8000:8000"     # Splunk Web UI
+      - "8088:8088"     # HEC (HTTP Event Collector)
+      - "8089:8089"     # REST API (management/search)
+    volumes:
+      - splunk-data:/opt/splunk/var
+      - ./splunk/default.yml:/tmp/defaults/default.yml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000"]
+      interval: 20s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+    networks:
+      - lab-net
+
+  # ---- Orchestration: n8n ----
+  n8n:
+    image: docker.io/n8nio/n8n:latest
+    container_name: lab-n8n
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-false}
+      - WEBHOOK_URL=http://n8n:5678/
+      - N8N_SECURE_COOKIE=false
+      # Allow fs/path in Code nodes so playbooks can be read from disk
+      - NODE_FUNCTION_ALLOW_BUILTIN=fs,path
+      # Pass DeepSeek creds so n8n workflows can use them
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-deepseek-v4-pro}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+    volumes:
+      - n8n-data:/home/node/.n8n
+      # Mount playbooks so n8n can read OKF files
+      - ./playbooks:/home/node/playbooks:ro
+    depends_on:
+      splunk:
+        condition: service_healthy
+    networks:
+      - lab-net
+
+  # ---- Case Management: TheHive 5 ----
+  cassandra:
+    image: cassandra:4.1
+    container_name: lab-cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=${CASSANDRA_CLUSTER_NAME:-thehive}
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=256M
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - lab-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: lab-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9002:9001"   # MinIO console (shifted to avoid TheHive conflict)
+    volumes:
+      - minio-data:/data
+    networks:
+      - lab-net
+
+  thehive:
+    image: strangebee/thehive:5.3
+    container_name: lab-thehive
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    ports:
+      - "${THEHIVE_PORT:-9000}:9000"
+    environment:
+      - JVM_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - ./thehive/application.conf:/etc/thehive/application.conf
+      - thehive-data:/opt/thp/thehive/data
+    networks:
+      - lab-net
+
+  # ---- MCP Server: Splunk query tools ----
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: lab-mcp-server
+    ports:
+      - "${MCP_SERVER_PORT:-3001}:3001"
+    environment:
+      - SPLUNK_URL=${SPLUNK_URL:-https://splunk:8089}
+      - SPLUNK_USER=${SPLUNK_USER:-admin}
+      - SPLUNK_PASSWORD=${SPLUNK_PASSWORD:-BsidesLab1!}
+      - MCP_SERVER_PORT=3001
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - TRIAGE_MAX_QUERIES=${TRIAGE_MAX_QUERIES:-8}
+      - COST_PER_QUERY_USD=${COST_PER_QUERY_USD:-0.03}
+      - TRIAGE_BUDGET_USD=${TRIAGE_BUDGET_USD:-0.50}
+    depends_on:
+      splunk:
+        condition: service_healthy
+    networks:
+      - lab-net
+
+volumes:
+  splunk-data:
+  n8n-data:
+  cassandra-data:
+  minio-data:
+  thehive-data:
+
+networks:
+  lab-net:
+    driver: bridge

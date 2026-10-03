@@ -1,0 +1,11 @@
+---
+splunk:
+  hec:
+    enable: true
+    ssl: false
+    port: 8088
+    token: abcd1234-abcd-1234-abcd-1234abcd1234
+  conf:
+    server:
+      sslConfig:
+        enableSplunkdSSL: "false"

@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Agentic SOC Demystified — BSides Toronto</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   THEME TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  --bg: #060a13;
+  --bg-card: rgba(15, 23, 42, 0.6);
+  --bg-glass: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(100, 120, 160, 0.25);
+  --glass-blur: 16px;
+  --cyan: #00f0ff;
+  --green: #39ff14;
+  --orange: #ff8c00;
+  --red: #ff4757;
+  --purple: #a78bfa;
+  --yellow: #fbbf24;
+  --blue: #60a5fa;
+  --pink: #f472b6;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #475569;
+  --glow-cyan: 0 0 20px rgba(0,240,255,0.3), 0 0 60px rgba(0,240,255,0.1);
+  --glow-green: 0 0 20px rgba(57,255,20,0.3), 0 0 60px rgba(57,255,20,0.1);
+  --glow-orange: 0 0 20px rgba(255,140,0,0.3), 0 0 60px rgba(255,140,0,0.1);
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════ */
+html, body { background: #060a13 !important; margin: 0; padding: 0; }
+.reveal { font-family: 'Inter', sans-serif; color: var(--text); background: #060a13 !important; }
+.reveal .slide-background { background: #060a13 !important; }
+.reveal .slides { text-align: left; }
+.reveal .slides section { padding: 48px 64px; box-sizing: border-box; background: transparent !important; }
+
+/* particles behind everything */
+#particles-js {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  z-index: 0;
+}
+.reveal { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════ */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: left;
+  margin: 0 0 4px 0;
+}
+.reveal h1 { font-size: 2.8em; line-height: 1.0; }
+.reveal h2 { font-size: 1.6em; margin-bottom: 8px; }
+.reveal h3 { font-size: 1.05em; text-shadow: none; }
+.reveal p { font-size: 0.9em; line-height: 1.5; margin: 0; }
+.reveal li { font-size: 0.88em; line-height: 1.4; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* color utilities */
+.tc { color: var(--cyan); }
+.tg { color: var(--green); }
+.to { color: var(--orange); }
+.tr { color: var(--red); }
+.tp { color: var(--purple); }
+.ty { color: var(--yellow); }
+.tb { color: var(--blue); }
+.td { color: var(--text-dim); }
+.tm { color: var(--text-muted); }
+.b { font-weight: 700; }
+
+/* ═══════════════════════════════════════════
+   GLASSMORPHISM CARDS
+   ═══════════════════════════════════════════ */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+.glass:hover { border-color: rgba(100,120,160,0.3); }
+.glass-sm { border-radius: 12px; padding: 16px; }
+.glass-tight { border-radius: 10px; padding: 12px 16px; }
+
+/* colored accent borders */
+.border-cyan   { border-color: rgba(0,240,255,0.35); box-shadow: inset 0 0 30px rgba(0,240,255,0.03); }
+.border-green  { border-color: rgba(57,255,20,0.35); box-shadow: inset 0 0 30px rgba(57,255,20,0.03); }
+.border-orange { border-color: rgba(255,140,0,0.35); box-shadow: inset 0 0 30px rgba(255,140,0,0.03); }
+.border-blue   { border-color: rgba(96,165,250,0.35); box-shadow: inset 0 0 30px rgba(96,165,250,0.03); }
+.border-purple { border-color: rgba(167,139,250,0.35); box-shadow: inset 0 0 30px rgba(167,139,250,0.03); }
+.border-red    { border-color: rgba(255,71,87,0.35); box-shadow: inset 0 0 30px rgba(255,71,87,0.03); }
+.border-yellow { border-color: rgba(251,191,36,0.35); box-shadow: inset 0 0 30px rgba(251,191,36,0.03); }
+
+/* ═══════════════════════════════════════════
+   TERMINAL BLOCK
+   ═══════════════════════════════════════════ */
+.terminal {
+  background: rgba(6,10,19,0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(57,255,20,0.2);
+  border-radius: 12px;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68em;
+  line-height: 1.7;
+  position: relative;
+  overflow: hidden;
+}
+.terminal::before {
+  content: '●  ●  ●';
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.55em;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(57,255,20,0.1);
+}
+.terminal .p { color: var(--green); }
+.terminal .c { color: var(--text-dim); }
+.terminal .h { color: var(--cyan); font-weight: 700; }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════ */
+.row { display: flex; gap: 16px; align-items: stretch; }
+.col { flex: 1; min-width: 0; }
+.stack { display: flex; flex-direction: column; }
+.center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.center h1, .center h2, .center h3, .center p { text-align: center; }
+.gap-xs { gap: 6px; }
+.gap-sm { gap: 10px; }
+.gap-md { gap: 16px; }
+.gap-lg { gap: 24px; }
+
+/* ═══════════════════════════════════════════
+   DIAGRAM COMPONENTS
+   ═══════════════════════════════════════════ */
+/* node box */
+.node {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 2px solid;
+  border-radius: 14px;
+  padding: 14px 20px;
+  text-align: center;
+  position: relative;
+}
+.node h3 { margin: 0; font-size: 0.88em; text-shadow: none; }
+.node p { font-size: 0.6em; color: var(--text-muted); margin-top: 4px; }
+.node-hero {
+  padding: 20px 28px;
+  box-shadow: 0 0 40px rgba(0,240,255,0.1);
+}
+.node-dim { opacity: 0.2; }
+
+/* arrows */
+.arrow { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; font-size: 1.2em; padding: 0 4px; }
+.arrow-down { justify-content: center; font-size: 1em; }
+
+/* stat callout */
+.stat-card { text-align: center; padding: 24px 16px; }
+.stat-num { font-family: 'JetBrains Mono', monospace; font-size: 2.6em; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 0.62em; color: var(--text-muted); margin-top: 8px; }
+
+/* step number */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800; font-size: 0.78em; flex-shrink: 0;
+}
+
+/* agent tag */
+.agent {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  flex: 1; min-width: 0;
+}
+.agent h3 { font-size: 0.68em; margin: 0; text-shadow: none; }
+.agent p { font-size: 0.52em; color: var(--text-muted); margin-top: 3px; }
+.agent-active {
+  background: rgba(0,240,255,0.06);
+  box-shadow: 0 0 20px rgba(0,240,255,0.08), inset 0 0 20px rgba(0,240,255,0.04);
+}
+
+/* rung (autonomy ladder) */
+.rung { display: flex; gap: 14px; align-items: center; }
+.rung-label {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.8em;
+  width: 300px; text-align: center; padding: 12px;
+  border: 2px solid; border-radius: 10px; background: var(--bg-glass);
+  backdrop-filter: blur(10px); flex-shrink: 0;
+}
+.rung-desc { font-size: 0.7em; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.pulse { animation: pulse-glow 2.5s ease-in-out infinite; }
+.float { animation: float 3s ease-in-out infinite; }
+.blink { animation: blink 1s step-end infinite; }
+
+.glow-cyan  { text-shadow: var(--glow-cyan); }
+.glow-green { text-shadow: var(--glow-green); }
+.glow-orange { text-shadow: var(--glow-orange); }
+
+/* ═══════════════════════════════════════════
+   REVEAL OVERRIDES
+   ═══════════════════════════════════════════ */
+.reveal .progress { color: var(--cyan); height: 3px; }
+.reveal .controls { color: var(--cyan); }
+.reveal .slide-number { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* diagram svg connectors */
+.connector-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.connector-line { stroke-dasharray: 6 4; stroke-linecap: round; }
+.connector-solid { stroke-linecap: round; }
+</style>
+</head>
+<body>
+
+<div id="particles-js"></div>
+
+<div class="reveal" style="background:#060a13;">
+<div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 1: COVER
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="mono td" style="font-size:0.6em; letter-spacing:5px; margin-bottom:24px;">// BSIDES TORONTO</p>
+  <h1 class="tg glow-green" style="font-size:3em;">AGENTIC SOC</h1>
+  <h1 class="tc glow-cyan" style="font-size:3em; margin-top:0;">DEMYSTIFIED</h1>
+  <p class="tm" style="font-size:0.95em; font-style:italic; margin-top:20px;">From Buzzword to Working Pipeline</p>
+  <div style="height:60px;"></div>
+  <p style="font-size:1.05em; font-weight:600;">Moiz Lakdawala</p>
+  <p class="tg mono" style="font-size:0.65em; letter-spacing:2px; margin-top:6px;">BSides Toronto</p>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 2: WHO AM I
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <div style="display:flex; align-items:center; justify-content:center; gap:50px; flex-wrap:wrap;">
+
+    <!-- Photo -->
+    <div style="flex-shrink:0;">
+      <img src="img/moiz-cat.png" alt="Moiz Lakdawala"
+           style="width:240px; height:240px; object-fit:cover; border-radius:50%;
+                  border:3px solid var(--cyan); box-shadow:0 0 30px rgba(0,240,255,0.25);">
+    </div>
+
+    <!-- Info -->
+    <div style="text-align:left; max-width:520px;">
+      <p class="mono td" style="font-size:0.55em; letter-spacing:4px; margin-bottom:6px;">// WHOAMI</p>
+      <h2 class="tc glow-cyan" style="font-size:1.8em; margin:0;">Moiz Lakdawala</h2>
+      <p class="tm" style="font-size:0.75em; margin-top:6px;">7+ yrs in the SOC trenches</p>
+
+      <!-- Role progression — all appear on one click -->
+      <div class="fragment fade-right" style="margin-top:14px; display:flex; flex-direction:column; gap:3px; font-size:0.7em; font-family:'JetBrains Mono',monospace;">
+        <p style="margin:0; color:rgba(148,163,184,0.6);">SOC Analyst</p>
+        <p style="margin:0; color:rgba(148,163,184,0.7);">Sr. SOC Analyst</p>
+        <p style="margin:0; color:rgba(148,163,184,0.8);">Security &amp; Automation Engineer</p>
+        <p style="margin:0; color:rgba(148,163,184,0.85);">SOC Lead</p>
+        <p style="margin:0; color:rgba(148,163,184,0.9);">Technical Account Manager</p>
+        <p style="margin:0; color:rgba(203,213,225,0.95);">Director of Security Operations</p>
+        <p class="b" style="margin:0; color:var(--green); text-shadow:0 0 8px rgba(57,255,20,0.3);">▸ Principal Consultant, SOC Advisory</p>
+      </div>
+
+      <div style="margin-top:18px; display:flex; gap:20px; font-size:0.65em; flex-wrap:wrap;">
+        <span><span class="tg b mono">MEDIUM</span> <span class="td">@moizl599</span></span>
+        <span><span class="tb b mono">LINKEDIN</span> <span class="td">/abdulmoiz-lakdawala</span></span>
+        <span><span class="tp b mono">GITHUB</span> <span class="td">/moizl599</span></span>
+      </div>
+
+      <p class="fragment td" style="font-size:0.6em; margin-top:14px; font-style:italic;">
+        "I automate SOC workflows so I have more time to <span class="tg">not</span> check the alerts."
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 3: AI ≠ LLM
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">Let's Clear This Up First</h2>
+  <p class="td" style="margin-bottom:18px;">When someone says "AI agent" — what do they actually mean?</p>
+  <div class="row gap-lg">
+    <div class="glass col stack gap-sm" style="opacity:0.6;">
+      <h3 class="mono td" style="font-size:1.6em; text-align:center;">AI</h3>
+      <p class="tm">A marketing umbrella.</p>
+      <p class="td" style="font-size:0.7em;">Computer vision, NLP, robotics, recommendation engines — all called "AI".</p>
+      <p class="td" style="font-size:0.7em; font-style:italic;">Means almost nothing specific.</p>
+    </div>
+    <div style="display:flex; align-items:center;">
+      <p class="to b mono" style="font-size:2.2em;">≠</p>
+    </div>
+    <div class="glass col border-cyan stack gap-sm">
+      <h3 class="mono tc" style="font-size:1.6em; text-align:center;">LLM</h3>
+      <p>Large Language Model.</p>
+      <p class="tm" style="font-size:0.7em;">Reads, reasons, and writes. This is the engine behind agentic work.</p>
+      <p class="tc" style="font-size:0.7em; font-style:italic;">When someone says "AI agent", they mean an LLM with tools.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 3: SPECTRUM — ALL THREE SIDE BY SIDE
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan" style="margin-bottom:4px;">Three Ways to Put an LLM to Work</h2>
+  <p class="td" style="font-size:0.6em; margin-bottom:12px;">Who picks the next step?</p>
+
+  <div class="row gap-sm" style="align-items:flex-start; justify-content:center;">
+
+    <!-- ─── DETERMINISTIC ─── -->
+    <div class="glass border-blue" style="flex:1; max-width:370px; padding:14px 16px;">
+      <h3 class="mono tb" style="font-size:0.78em; letter-spacing:2px; margin-bottom:2px;">1 · DETERMINISTIC</h3>
+      <p class="td" style="font-size:0.5em; margin-bottom:10px;">the LLM lives inside a fixed playbook</p>
+
+      <!-- Mini diagram: linear flow (height matched to other panels) -->
+      <svg viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; margin-bottom:10px;">
+        <defs>
+          <marker id="s-ab" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#475569" stroke-width="1"/>
+          </marker>
+        </defs>
+        <!-- Centered vertically at y=70 -->
+        <rect x="5" y="56" width="65" height="28" rx="6" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="37" y="75" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="10">trigger</text>
+        <line x1="72" y1="70" x2="90" y2="70" stroke="#475569" stroke-width="1.2" marker-end="url(#s-ab)"/>
+        <rect x="93" y="56" width="50" height="28" rx="6" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="118" y="75" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="10">step</text>
+        <line x1="145" y1="70" x2="163" y2="70" stroke="#475569" stroke-width="1.2" marker-end="url(#s-ab)"/>
+        <rect x="166" y="52" width="60" height="36" rx="8" fill="rgba(0,240,255,0.1)" stroke="#00f0ff" stroke-width="2"/>
+        <text x="196" y="75" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">LLM</text>
+        <line x1="228" y1="70" x2="246" y2="70" stroke="#475569" stroke-width="1.2" marker-end="url(#s-ab)"/>
+        <rect x="249" y="56" width="65" height="28" rx="6" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="281" y="75" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="10">action</text>
+      </svg>
+
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tb">◆</span> Playbook decides every step</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tb">◆</span> LLM just fills in context</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:6px;"><span class="tb">◆</span> Breaks when reality goes off script</p>
+      <p class="td" style="font-size:0.42em; font-style:italic;">= brain in a supporting role</p>
+      <div style="border-top:1px solid rgba(96,165,250,0.2); margin-top:8px; padding-top:6px;">
+        <p class="mono" style="font-size:0.48em; text-align:center;"><span class="tb b">the playbook</span></p>
+      </div>
+    </div>
+
+    <!-- ─── AGENTIC ─── -->
+    <div class="glass border-cyan" style="flex:1; max-width:370px; padding:14px 16px;">
+      <h3 class="mono tc" style="font-size:0.78em; letter-spacing:2px; margin-bottom:2px;">2 · AGENTIC</h3>
+      <p class="td" style="font-size:0.5em; margin-bottom:10px;">the LLM decides, acts, and gets gated</p>
+
+      <!-- Mini diagram: LLM hub with tools + gate -->
+      <svg viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; margin-bottom:10px;">
+        <defs>
+          <marker id="s-ac" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#94a3b8" stroke-width="1"/>
+          </marker>
+          <marker id="s-ar" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#ff4757" stroke-width="1"/>
+          </marker>
+        </defs>
+        <!-- LLM circle -->
+        <circle cx="170" cy="38" r="28" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="2"/>
+        <text x="170" y="43" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">LLM</text>
+
+        <!-- Arrow to query SIEM -->
+        <line x1="142" y1="38" x2="82" y2="38" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#s-ac)"/>
+        <line x1="82" y1="50" x2="142" y2="50" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#s-ac)"/>
+        <rect x="10" y="24" width="72" height="28" rx="5" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="46" y="43" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9">query SIEM</text>
+
+        <!-- Arrow to open ticket -->
+        <line x1="194" y1="22" x2="258" y2="12" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#s-ac)"/>
+        <rect x="260" y="2" width="72" height="24" rx="5" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="296" y="18" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9">open ticket</text>
+
+        <!-- Arrow down to gate -->
+        <line x1="170" y1="66" x2="170" y2="82" stroke="#ff4757" stroke-width="1.2" marker-end="url(#s-ar)"/>
+
+        <!-- Diamond gate -->
+        <g transform="translate(170,104)">
+          <rect x="-16" y="-16" width="32" height="32" rx="2" transform="rotate(45)" fill="rgba(255,71,87,0.06)" stroke="#ff4757" stroke-width="1.5"/>
+          <text x="0" y="5" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">gate</text>
+        </g>
+
+        <!-- Arrow gate → isolate host -->
+        <line x1="194" y1="104" x2="248" y2="104" stroke="#ff4757" stroke-width="1.2" marker-end="url(#s-ar)"/>
+        <rect x="250" y="90" width="80" height="28" rx="5" fill="rgba(255,71,87,0.04)" stroke="rgba(255,71,87,0.4)" stroke-width="1.5"/>
+        <text x="290" y="108" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">isolate host</text>
+      </svg>
+
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tc">◆</span> LLM picks the tool, and when</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tc">◆</span> Acts through APIs, in guardrails</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:6px;"><span class="tc">◆</span> Human approves the risky moves</p>
+      <p class="td" style="font-size:0.42em; font-style:italic;">= brain in charge, gated</p>
+      <div style="border-top:1px solid rgba(0,240,255,0.2); margin-top:8px; padding-top:6px;">
+        <p class="mono" style="font-size:0.48em; text-align:center;"><span class="tc b">the LLM</span><span class="td">, human at the gate</span></p>
+      </div>
+    </div>
+
+    <!-- ─── AUTONOMOUS ─── -->
+    <div class="glass border-green" style="flex:1; max-width:370px; padding:14px 16px;">
+      <h3 class="mono tg" style="font-size:0.78em; letter-spacing:2px; margin-bottom:2px;">3 · AUTONOMOUS</h3>
+      <p class="td" style="font-size:0.5em; margin-bottom:10px;">approved classes run end to end</p>
+
+      <!-- Mini diagram: LLM → Evidence Log, QA loop -->
+      <svg viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; margin-bottom:10px;">
+        <defs>
+          <marker id="s-ag" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1"/>
+          </marker>
+          <marker id="s-ap" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#ff4757" stroke-width="1"/>
+          </marker>
+        </defs>
+        <!-- LLM circle -->
+        <circle cx="65" cy="40" r="28" fill="rgba(57,255,20,0.06)" stroke="#39ff14" stroke-width="2"/>
+        <text x="65" y="45" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">LLM</text>
+
+        <!-- Arrow LLM → Evidence Log -->
+        <line x1="93" y1="40" x2="148" y2="40" stroke="#39ff14" stroke-width="1.5" marker-end="url(#s-ag)"/>
+        <text x="120" y="34" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">act</text>
+
+        <!-- Evidence Log box -->
+        <rect x="150" y="16" width="160" height="50" rx="6" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="230" y="36" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">EVIDENCE LOG</text>
+        <text x="230" y="52" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">every action · every verdict</text>
+
+        <!-- Dashed line down to QA -->
+        <line x1="230" y1="66" x2="230" y2="100" stroke="#ff4757" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#s-ap)"/>
+        <text x="248" y="86" text-anchor="start" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8">sample</text>
+
+        <!-- QA circle -->
+        <circle cx="230" cy="118" r="18" fill="rgba(255,71,87,0.06)" stroke="#ff4757" stroke-width="1.5"/>
+        <text x="230" y="122" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="10">QA</text>
+
+        <!-- Curved arrow QA → LLM (tune) -->
+        <path d="M212,118 Q120,140 65,68" fill="none" stroke="#39ff14" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#s-ag)"/>
+        <text x="120" y="130" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">tune</text>
+      </svg>
+
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tg">◆</span> Runs the whole class end to end</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tg">◆</span> Every step leaves evidence</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:6px;"><span class="tg">◆</span> Humans sample, hold the kill switch</p>
+      <p class="td" style="font-size:0.42em; font-style:italic;">= brain trusted with a class of work</p>
+      <div style="border-top:1px solid rgba(57,255,20,0.2); margin-top:8px; padding-top:6px;">
+        <p class="mono" style="font-size:0.48em; text-align:center;"><span class="tg b">the LLM</span><span class="td">, humans audit</span></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 6: TERMINATOR
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <div class="row gap-lg" style="align-items:center; justify-content:center;">
+    <div style="flex-shrink:0;">
+      <img src="img/terminator.png" alt="Terminator thumbs up" style="width:380px; border-radius:16px; border:2px solid rgba(255,140,0,0.3); box-shadow: 0 0 40px rgba(255,140,0,0.15);">
+    </div>
+    <div class="stack gap-sm" style="max-width:400px;">
+      <h2 class="to glow-orange" style="font-size:1.5em;">Totally fine.<br>Nothing to worry about.</h2>
+      <p class="td" style="margin-top:8px;">Fully autonomous AI is <span class="tg b">definitely</span> not a problem.</p>
+      <p class="td" style="margin-top:4px; font-size:0.7em; font-style:italic;">(Everything I'll show you lives in the <span class="tc b">agentic</span> zone. Relax.)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 7: WHY LLMs ALONE ARE NOT AGENTS
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">Why LLMs Alone Are Not Agents</h2>
+  <p class="td" style="margin-bottom:18px;">A language model generates text. That's it — <span class="tc b">tokens, not actions</span>.</p>
+
+  <div class="row gap-lg" style="justify-content:center; align-items:flex-start;">
+
+    <!-- Left: the agentic loop with X mark -->
+    <div class="glass border-cyan" style="padding:20px 24px; max-width:440px;">
+      <svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+        <defs>
+          <marker id="lp-c" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#00f0ff" stroke-width="1.2"/>
+          </marker>
+          <marker id="lp-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1.2"/>
+          </marker>
+          <marker id="lp-y" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#fbbf24" stroke-width="1.2"/>
+          </marker>
+          <marker id="lp-m" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#a78bfa" stroke-width="1.2"/>
+          </marker>
+        </defs>
+
+        <!-- PERCEIVE box (top center) -->
+        <rect x="130" y="8" width="120" height="38" rx="8" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="2"/>
+        <text x="190" y="32" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">PERCEIVE</text>
+
+        <!-- Arrow down: Perceive → Select -->
+        <line x1="190" y1="46" x2="190" y2="72" stroke="#00f0ff" stroke-width="1.5" marker-end="url(#lp-c)"/>
+
+        <!-- SELECT ACTION box (center) -->
+        <rect x="120" y="75" width="140" height="38" rx="8" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="2"/>
+        <text x="190" y="99" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">SELECT ACTION</text>
+
+        <!-- X mark — LLM stops here -->
+        <text x="270" y="100" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="22" font-weight="bold">✕</text>
+        <text x="295" y="90" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">a language</text>
+        <text x="295" y="102" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">model stops</text>
+        <text x="295" y="114" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">here</text>
+
+        <!-- Arrow down: Select → Execute -->
+        <line x1="190" y1="113" x2="190" y2="138" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#lp-m)" stroke-dasharray="5,3"/>
+
+        <!-- EXECUTE TOOL box (bottom center) -->
+        <rect x="125" y="141" width="130" height="38" rx="8" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="190" y="165" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="11" opacity="0.5">EXECUTE TOOL</text>
+
+        <!-- OBSERVE RESULT box (left) -->
+        <rect x="10" y="75" width="95" height="38" rx="8" fill="rgba(57,255,20,0.06)" stroke="#39ff14" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="57" y="99" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="10" opacity="0.5">OBSERVE</text>
+
+        <!-- Curved arrow: Execute → Observe (left side) -->
+        <path d="M125,165 Q57,165 57,113" fill="none" stroke="#39ff14" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#lp-g)"/>
+
+        <!-- Curved arrow: Observe → Perceive (up) -->
+        <path d="M57,75 Q57,27 130,27" fill="none" stroke="#00f0ff" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#lp-c)"/>
+
+        <!-- Dashed overlay on bottom half to show it's unreachable -->
+        <text x="190" y="210" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="10" font-style="italic">needs tools + runtime to complete the loop</text>
+      </svg>
+    </div>
+
+    <!-- Right: three limitations -->
+    <div class="stack gap-sm" style="max-width:380px;">
+      <div class="glass glass-sm border-red" style="padding:16px 20px;">
+        <h3 class="tr" style="font-size:0.85em; margin-bottom:4px;">No native ability to act</h3>
+        <p class="tm" style="font-size:0.62em;">Can't read files, query APIs, or run code. It outputs text — someone else has to execute.</p>
+      </div>
+      <div class="glass glass-sm border-red" style="padding:16px 20px;">
+        <h3 class="tr" style="font-size:0.85em; margin-bottom:4px;">Cannot persist state</h3>
+        <p class="tm" style="font-size:0.62em;">No memory beyond its context window. Every call starts from scratch unless you build the plumbing.</p>
+      </div>
+      <div class="glass glass-sm border-red" style="padding:16px 20px;">
+        <h3 class="tr" style="font-size:0.85em; margin-bottom:4px;">Cannot observe results</h3>
+        <p class="tm" style="font-size:0.62em;">It can't see what happened after its output was used. No feedback loop without an orchestrator.</p>
+      </div>
+      <p class="td" style="font-size:0.6em; font-style:italic; margin-top:4px;">This is why you need the agent wrapper — <span class="tc">tools + memory + loop</span></p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 8: AGENTIC LOOP (ReAct)
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">The Agentic Loop</h2>
+  <p class="td" style="margin-bottom:20px;">What makes an agent an agent — the <span class="tc b">ReAct</span> pattern</p>
+  <div class="row gap-lg" style="justify-content:center;">
+    <div class="glass col center border-blue" style="max-width:260px; padding:24px;">
+      <p class="mono tb b" style="font-size:1.3em;">01</p>
+      <h3 class="mono tb" style="margin-top:6px;">OBSERVE</h3>
+      <p class="tm" style="font-size:0.62em; margin-top:8px;">Read the alert, query results, error messages</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="glass col center border-cyan" style="max-width:260px; padding:24px;">
+      <p class="mono tc b" style="font-size:1.3em;">02</p>
+      <h3 class="mono tc" style="margin-top:6px;">THINK</h3>
+      <p class="tm" style="font-size:0.62em; margin-top:8px;">Select the right playbook, plan the next query</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="glass col center border-green" style="max-width:260px; padding:24px;">
+      <p class="mono tg b" style="font-size:1.3em;">03</p>
+      <h3 class="mono tg" style="margin-top:6px;">ACT</h3>
+      <p class="tm" style="font-size:0.62em; margin-top:8px;">Run a SIEM query, enrich context, write a verdict</p>
+    </div>
+  </div>
+  <p class="mono td" style="font-size:1.4em; text-align:center; margin-top:4px;">↻</p>
+  <p class="tm" style="font-size:0.7em; text-align:center;">The LLM doesn't just answer — it decides what to <span class="tc b">do</span> next.</p>
+  <p class="td" style="font-size:0.58em; text-align:center; margin-top:6px; font-style:italic;">Each iteration costs time and tokens. Guardrails keep the loop from running forever.</p>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 8: AGENT ANATOMY
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">What the Brain Needs Around It</h2>
+  <p class="td" style="margin-bottom:8px;">Every practical agent is the same small assembly</p>
+  <div class="stack gap-sm center">
+    <!-- TRIGGER -->
+    <div class="glass glass-tight border-orange" style="width:260px;">
+      <div class="row gap-sm" style="align-items:center; justify-content:center;">
+        <span style="font-size:1.1em;">⚡</span>
+        <div><h3 class="mono to" style="font-size:0.8em;">TRIGGER</h3><p class="tm" style="font-size:0.55em;">Wakes the agent</p></div>
+      </div>
+    </div>
+    <p class="mono td" style="font-size:0.8em;">↓</p>
+    <!-- MIDDLE: TOOLS ← LLM → MEMORY -->
+    <div class="row gap-md" style="align-items:center;">
+      <div class="stack gap-xs center">
+        <div class="glass glass-tight border-blue" style="width:200px;">
+          <div class="row gap-sm" style="align-items:center; justify-content:center;">
+            <span style="font-size:1em;">🔧</span>
+            <div><h3 class="mono tb" style="font-size:0.8em;">TOOLS</h3><p class="tm" style="font-size:0.55em;">The Hands</p></div>
+          </div>
+        </div>
+        <p class="tb" style="font-size:0.5em; font-style:italic;">SIEM, EDR, ticketing</p>
+      </div>
+      <span class="mono td" style="font-size:0.9em;">←</span>
+      <div class="glass border-cyan node-hero float" style="padding:20px 36px;">
+        <h3 class="mono tc" style="font-size:1.4em;">LLM</h3>
+        <p class="tc" style="font-size:0.65em;">The Brain</p>
+      </div>
+      <span class="mono td" style="font-size:0.9em;">→</span>
+      <div class="stack gap-xs center">
+        <div class="glass glass-tight border-purple" style="width:200px;">
+          <div class="row gap-sm" style="align-items:center; justify-content:center;">
+            <span style="font-size:1em;">📚</span>
+            <div><h3 class="mono tp" style="font-size:0.8em;">MEMORY</h3><p class="tm" style="font-size:0.55em;">Context</p></div>
+          </div>
+        </div>
+        <p class="tp" style="font-size:0.5em; font-style:italic;">Playbooks, past cases</p>
+      </div>
+    </div>
+    <p class="mono td" style="font-size:0.8em;">↓</p>
+    <!-- HUMAN -->
+    <div class="glass glass-tight border-green" style="width:260px;">
+      <div class="row gap-sm" style="align-items:center; justify-content:center;">
+        <span style="font-size:1.1em;">👤</span>
+        <div><h3 class="mono tg" style="font-size:0.8em;">HUMAN</h3><p class="tm" style="font-size:0.55em;">Owns the judgment</p></div>
+      </div>
+    </div>
+  </div>
+  <p class="td" style="font-size:0.56em; font-style:italic; text-align:center; margin-top:10px;">Any system without an API sits beyond the agent's reach.</p>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 9: TRANSITION
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="tm" style="font-size:1.1em;">So what does it truly mean</p>
+  <h2 class="tc glow-cyan" style="font-size:1.9em; margin-top:8px; text-align:center;">to build an Agentic SOC?</h2>
+  <div style="height:20px;"></div>
+  <div class="terminal" style="max-width:480px; border-color:rgba(0,240,255,0.3);">
+    <p><span class="p">$</span> cd ~/agentic-soc && make build</p>
+    <p class="c"># Let me show you. I built one.</p>
+    <p><span class="p">$</span> <span class="blink">▊</span></p>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 10: BUILDING THE PIPELINE (progressive fragments)
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan" style="margin-bottom:4px;">Building the Pipeline</h2>
+  <p class="td" style="font-size:0.6em; margin-bottom:16px;">Click by click — every piece snaps into place</p>
+
+  <!-- SVG diagram — n8n as the hub, fragments reveal each piece -->
+  <div style="max-width:960px; margin:0 auto; position:relative;">
+    <svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+      <defs>
+        <marker id="bp-o" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#ff8c00" stroke-width="1.5"/>
+        </marker>
+        <marker id="bp-b" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+        </marker>
+        <marker id="bp-c" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#00f0ff" stroke-width="1.5"/>
+        </marker>
+        <marker id="bp-p" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+        </marker>
+        <marker id="bp-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#39ff14" stroke-width="1.5"/>
+        </marker>
+        <marker id="bp-r" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="none" stroke="#ff4757" stroke-width="1.5"/>
+        </marker>
+      </defs>
+
+      <!-- ═══ FRAGMENT 1: TheHive (alert source) ═══ -->
+      <g class="fragment" data-fragment-index="0">
+        <rect x="30" y="95" width="170" height="70" rx="12" fill="rgba(255,140,0,0.06)" stroke="#ff8c00" stroke-width="2"/>
+        <text x="115" y="128" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="16" font-weight="bold">TheHive 5</text>
+        <text x="115" y="150" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="12">Cases &amp; Alerts</text>
+      </g>
+
+      <!-- ═══ FRAGMENT 2: n8n (orchestrator hub) + arrow from TheHive ═══ -->
+      <g class="fragment" data-fragment-index="1">
+        <line x1="200" y1="130" x2="318" y2="130" stroke="#ff8c00" stroke-width="2" marker-end="url(#bp-o)"/>
+        <text x="260" y="122" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="10">webhook</text>
+        <rect x="320" y="85" width="180" height="90" rx="14" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="3"/>
+        <text x="410" y="125" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="20" font-weight="bold">n8n</text>
+        <text x="410" y="148" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="12">Orchestrator</text>
+        <text x="410" y="165" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="10" font-style="italic">connects everything</text>
+      </g>
+
+      <!-- ═══ FRAGMENT 3: LLM (the brain) + arrow from n8n ═══ -->
+      <g class="fragment" data-fragment-index="2">
+        <line x1="500" y1="130" x2="618" y2="130" stroke="#00f0ff" stroke-width="2" marker-end="url(#bp-c)"/>
+        <text x="560" y="122" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="10">context</text>
+        <rect x="620" y="85" width="200" height="90" rx="14" fill="rgba(0,240,255,0.06)" stroke="#00f0ff" stroke-width="3"/>
+        <text x="720" y="122" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="20" font-weight="bold">LLM</text>
+        <text x="720" y="148" text-anchor="middle" fill="#00f0ff" font-family="Inter,sans-serif" font-size="13">The Brain</text>
+        <text x="720" y="165" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="10" font-style="italic">reasons &amp; decides</text>
+      </g>
+
+      <!-- ═══ FRAGMENT 4: OKF Playbooks (knowledge) — below n8n left ═══ -->
+      <g class="fragment" data-fragment-index="3">
+        <line x1="370" y1="175" x2="240" y2="255" stroke="#39ff14" stroke-width="1.5" marker-end="url(#bp-g)"/>
+        <text x="290" y="220" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9" transform="rotate(-25,290,220)">loads</text>
+        <rect x="130" y="255" width="180" height="65" rx="10" fill="rgba(57,255,20,0.04)" stroke="#39ff14" stroke-width="2"/>
+        <text x="220" y="282" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="14" font-weight="bold">OKF Playbooks</text>
+        <text x="220" y="302" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">55 runbooks · prose, not code</text>
+      </g>
+
+      <!-- ═══ FRAGMENT 5: MCP Server + Splunk (tools) — below n8n center ═══ -->
+      <g class="fragment" data-fragment-index="4">
+        <line x1="410" y1="175" x2="410" y2="255" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#bp-p)"/>
+        <text x="425" y="220" text-anchor="start" fill="#475569" font-family="JetBrains Mono,monospace" font-size="9">calls</text>
+        <rect x="340" y="255" width="140" height="65" rx="10" fill="rgba(167,139,250,0.04)" stroke="#a78bfa" stroke-width="2"/>
+        <text x="410" y="282" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="14" font-weight="bold">MCP Server</text>
+        <text x="410" y="302" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">3 generic tools</text>
+
+        <!-- MCP → Splunk -->
+        <line x1="410" y1="320" x2="410" y2="348" stroke="#ff4757" stroke-width="1.5" marker-end="url(#bp-r)"/>
+        <rect x="340" y="350" width="140" height="55" rx="10" fill="rgba(255,71,87,0.04)" stroke="#ff4757" stroke-width="2"/>
+        <text x="410" y="376" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="14" font-weight="bold">Splunk</text>
+        <text x="410" y="394" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">SIEM / Logs</text>
+      </g>
+
+      <!-- ═══ FRAGMENT 6: Budget guardrails — below n8n right ═══ -->
+      <g class="fragment" data-fragment-index="5">
+        <line x1="450" y1="175" x2="600" y2="255" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#bp-o)"/>
+        <text x="540" y="220" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="9" transform="rotate(25,540,220)">limits</text>
+        <rect x="530" y="255" width="180" height="65" rx="10" fill="rgba(251,191,36,0.04)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="620" y="282" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="14" font-weight="bold">Budget Guard</text>
+        <text x="620" y="302" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">8 queries · $0.50 cap</text>
+      </g>
+
+      <!-- ═══ FRAGMENT 7: Design philosophy callout ═══ -->
+      <g class="fragment" data-fragment-index="6">
+        <rect x="530" y="350" width="320" height="55" rx="10" fill="rgba(0,240,255,0.04)" stroke="rgba(0,240,255,0.3)" stroke-width="1.5"/>
+        <text x="690" y="374" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">Smart brain, dumb tools</text>
+        <text x="690" y="394" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">LLM writes its own SPL from prose</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 14: WHAT TO WATCH FOR
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">What to Watch For</h2>
+  <p class="td" style="margin-bottom:18px;">Four things that prove this isn't just a chatbot</p>
+  <div class="stack gap-md">
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(96,165,250,0.25);">
+      <div class="step-num" style="background:var(--blue); color:var(--bg);">1</div>
+      <p>Agent reads <span class="tc b">55 playbooks</span> and selects the right one</p>
+    </div>
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(0,240,255,0.25);">
+      <div class="step-num" style="background:var(--cyan); color:var(--bg);">2</div>
+      <p>It writes its own <span class="tg b">SPL query</span> — nobody told it the syntax</p>
+    </div>
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(255,140,0,0.25);">
+      <div class="step-num" style="background:var(--orange); color:var(--bg);">3</div>
+      <p>If a query <span class="to b">fails</span>, it reads the error and <span class="tg b">self-corrects</span></p>
+    </div>
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(255,71,87,0.25);">
+      <div class="step-num" style="background:var(--red); color:var(--bg);">4</div>
+      <p>The smoking gun: <span class="tr b">same session, two continents, 20 min apart</span></p>
+    </div>
+  </div>
+  <div class="terminal" style="max-width:550px; margin-top:14px;">
+    <p><span class="p">|</span> <span class="h">stats dc(src_ip) by session_id</span></p>
+    <p class="c">^ The agent writes this query itself, from prose.</p>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 15: LIVE DEMO
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="mono td" style="font-size:0.6em; letter-spacing:5px;">// SWITCHING TO TERMINAL</p>
+  <div style="height:16px;"></div>
+  <h1 class="tg glow-green" style="font-size:3.2em;">LIVE DEMO</h1>
+  <div style="height:16px;"></div>
+  <div class="terminal" style="max-width:520px; border-color:rgba(57,255,20,0.3);">
+    <p><span class="p">$</span> trigger_alert <span class="h">→</span> investigate <span class="h">→</span> verdict</p>
+    <p><span class="p">$</span> <span class="blink">▊</span></p>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 16: GUARDRAILS
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">Guardrails</h2>
+  <p class="td" style="margin-bottom:18px;">Don't let it bankrupt you</p>
+  <div class="row gap-lg">
+    <div class="glass col stat-card border-blue">
+      <p class="stat-num tb">8</p>
+      <p class="stat-label">Max queries<br>per triage</p>
+    </div>
+    <div class="glass col stat-card border-cyan">
+      <p class="stat-num tc">$0.03</p>
+      <p class="stat-label">Estimated cost<br>per query</p>
+    </div>
+    <div class="glass col stat-card border-orange">
+      <p class="stat-num to">$0.50</p>
+      <p class="stat-label">Budget ceiling<br>per investigation</p>
+    </div>
+  </div>
+  <div class="terminal" style="margin-top:18px;">
+    <p class="c"># BUDGET ENFORCEMENT</p>
+    <p><span class="p">→</span> Agent sees remaining budget after <span class="h">every</span> query</p>
+    <p><span class="p">→</span> Wraps up investigation when ≤ 2 queries left</p>
+    <p><span class="p">→</span> <span style="color:var(--orange);">Hard stop</span> on exhaustion — must deliver verdict immediately</p>
+    <p><span class="p">→</span> Final report includes <span style="color:var(--green);">full cost summary</span></p>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 17: FOUR MOVES
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">The Framework: Four Moves</h2>
+  <p class="td" style="margin-bottom:16px;">A structured approach to building an agentic SOC</p>
+  <div class="row gap-md">
+    <div class="glass col center" style="border-top:3px solid var(--blue); border-radius:4px 4px 16px 16px; padding:24px 16px;">
+      <p class="mono tb b" style="font-size:1.8em;">01</p>
+      <h3 class="mono" style="margin-top:6px;">MAP</h3>
+      <p class="tm" style="font-size:0.6em; margin-top:10px;">Inventory everything the SOC does. 12 functions, 59 subtasks.</p>
+    </div>
+    <div class="glass col center" style="border-top:3px solid var(--cyan); border-radius:4px 4px 16px 16px; padding:24px 16px;">
+      <p class="mono tc b" style="font-size:1.8em;">02</p>
+      <h3 class="mono" style="margin-top:6px;">GRADE</h3>
+      <p class="tm" style="font-size:0.6em; margin-top:10px;">How much could an agent carry? Green / Amber / Hold.</p>
+    </div>
+    <div class="glass col center" style="border-top:3px solid var(--green); border-radius:4px 4px 16px 16px; padding:24px 16px;">
+      <p class="mono tg b" style="font-size:1.8em;">03</p>
+      <h3 class="mono" style="margin-top:6px;">ASSIGN</h3>
+      <p class="tm" style="font-size:0.6em; margin-top:10px;">Small agents, one job each. Shared tools, one human gate.</p>
+    </div>
+    <div class="glass col center" style="border-top:3px solid var(--orange); border-radius:4px 4px 16px 16px; padding:24px 16px;">
+      <p class="mono to b" style="font-size:1.8em;">04</p>
+      <h3 class="mono" style="margin-top:6px;">EARN</h3>
+      <p class="tm" style="font-size:0.6em; margin-top:10px;">Autonomy is earned against evidence. One rung at a time.</p>
+    </div>
+  </div>
+  <p class="tm" style="font-size:0.68em; text-align:center; margin-top:16px;">
+    <span class="tc b">Alert triage</span> has the highest volume, most measurable outcomes, and heaviest analyst burden. Build it first.
+  </p>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 18: SOC OPERATIONS MAP — Phase 1: MAP
+     ══════════════════════════════════════════════════════════════ -->
+<section data-transition="fade" style="padding:0 !important;">
+  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+    <svg viewBox="0 0 960 680" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;" text-rendering="geometricPrecision">
+      <defs>
+        <marker id="sm-w" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#475569" stroke-width="1.2"/></marker>
+        <marker id="sm-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1.2"/></marker>
+        <marker id="sm-c" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#00f0ff" stroke-width="1.2"/></marker>
+      </defs>
+
+      <!-- ══ TITLE (top-left) ══ -->
+      <text x="20" y="22" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="18" font-weight="bold" letter-spacing="3">SOC OPERATIONS MAP</text>
+      <text x="20" y="38" fill="#475569" font-family="Inter,sans-serif" font-size="10">Phase 1 · MAP — 12 functions · 59 subtasks · full-scope taxonomy</text>
+
+      <!-- ══ SOC LOOP (top-right) ══ -->
+      <g transform="translate(460,6)">
+        <line x1="115" y1="0" x2="115" y2="10" stroke="#475569" stroke-width="1" marker-end="url(#sm-w)"/>
+        <rect x="20" y="14" width="60" height="20" rx="4" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="0.8"/>
+        <text x="50" y="28" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="9">Collect</text>
+        <line x1="80" y1="24" x2="96" y2="24" stroke="#475569" stroke-width="0.8" marker-end="url(#sm-w)"/>
+        <rect x="98" y="14" width="58" height="20" rx="4" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="0.8"/>
+        <text x="127" y="28" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="9">Detect</text>
+        <line x1="156" y1="24" x2="172" y2="24" stroke="#475569" stroke-width="0.8" marker-end="url(#sm-w)"/>
+        <rect x="174" y="14" width="58" height="20" rx="4" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="0.8"/>
+        <text x="203" y="28" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="9">Triage</text>
+        <line x1="232" y1="24" x2="248" y2="24" stroke="#475569" stroke-width="0.8" marker-end="url(#sm-w)"/>
+        <rect x="250" y="14" width="66" height="20" rx="4" fill="rgba(255,140,0,0.08)" stroke="#ff8c00" stroke-width="0.8"/>
+        <text x="283" y="28" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="9">Respond</text>
+        <line x1="316" y1="24" x2="332" y2="24" stroke="#475569" stroke-width="0.8" marker-end="url(#sm-w)"/>
+        <rect x="334" y="14" width="52" height="20" rx="4" fill="rgba(57,255,20,0.08)" stroke="#39ff14" stroke-width="0.8"/>
+        <text x="360" y="28" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">Learn</text>
+        <text x="215" y="48" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="8" font-style="italic">THE SOC LOOP · continuous improvement</text>
+      </g>
+
+      <!-- ══════════════ TIER 1: PROACTIVE & INTELLIGENCE ══════════════ -->
+      <rect x="12" y="55" width="730" height="195" rx="8" fill="rgba(167,139,250,0.03)" stroke="rgba(167,139,250,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="22" y="72" fill="#a78bfa" font-family="Inter,sans-serif" font-size="11" font-weight="bold">PROACTIVE &amp; INTELLIGENCE</text>
+      <text x="230" y="72" fill="#475569" font-family="Inter,sans-serif" font-size="9">· get ahead of the adversary</text>
+
+      <!-- 5: Threat Intelligence -->
+      <rect x="22" y="80" width="170" height="32" rx="6" fill="rgba(255,71,87,0.12)" stroke="#ff4757" stroke-width="1.5"/>
+      <text x="107" y="101" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">5 · THREAT INTEL</text>
+      <text x="28" y="128" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="128" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Feed management &amp; curation</text>
+      <text x="28" y="142" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">IOC / IOA operationalization</text>
+      <text x="28" y="156" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="156" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Actor &amp; campaign tracking</text>
+      <text x="28" y="170" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="170" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">PIRs &amp; intel dissemination</text>
+      <text x="28" y="184" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="184" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Strategic / tactical reporting</text>
+      <text x="28" y="198" fill="#475569" font-family="Inter,sans-serif" font-size="9">○ Digital risk · dark web (optional)</text>
+
+      <!-- Arrow 5→4 -->
+      <line x1="192" y1="96" x2="203" y2="96" stroke="#475569" stroke-width="1" marker-end="url(#sm-w)"/>
+      <text x="198" y="88" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7">TTPs</text>
+
+      <!-- 4: Detection Engineering -->
+      <rect x="205" y="80" width="175" height="32" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="292" y="101" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">4 · DETECTION ENG</text>
+      <text x="211" y="128" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="128" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Use case lifecycle management</text>
+      <text x="211" y="142" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Rule / analytic dev &amp; testing</text>
+      <text x="211" y="156" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="156" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">MITRE ATT&amp;CK coverage mapping</text>
+      <text x="211" y="170" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="170" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Purple team validation</text>
+      <text x="211" y="184" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="184" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Detection-as-code / versioning</text>
+
+      <!-- Arrow 4→6 -->
+      <line x1="380" y1="96" x2="391" y2="96" stroke="#475569" stroke-width="1" marker-end="url(#sm-w)"/>
+      <text x="386" y="88" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7">findings</text>
+
+      <!-- 6: Threat Hunting -->
+      <rect x="393" y="80" width="165" height="32" rx="6" fill="rgba(0,240,255,0.12)" stroke="#00f0ff" stroke-width="1.5"/>
+      <text x="475" y="101" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">6 · THREAT HUNTING</text>
+      <text x="399" y="128" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="128" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Hypothesis-driven hunts</text>
+      <text x="399" y="142" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Baseline &amp; anomaly analysis</text>
+      <text x="399" y="156" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="156" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Hunt cadence &amp; backlog mgmt</text>
+      <text x="399" y="170" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="170" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Findings → detection pipeline</text>
+
+      <!-- 7: Vulnerability Mgmt -->
+      <rect x="568" y="80" width="168" height="32" rx="6" fill="rgba(251,191,36,0.12)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="652" y="101" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">7 · VULN MGMT</text>
+      <text x="574" y="128" fill="#fbbf24" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="128" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Scanning &amp; asset discovery</text>
+      <text x="574" y="142" fill="#fbbf24" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Risk-based prioritization</text>
+      <text x="574" y="156" fill="#fbbf24" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="156" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Remediation SLA tracking</text>
+      <text x="574" y="170" fill="#fbbf24" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="170" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Attack-surface reporting</text>
+      <text x="680" y="188" fill="#475569" font-family="Inter,sans-serif" font-size="7.5" font-style="italic">~ risk context feeds triage &amp; reporting</text>
+
+      <!-- ═══ Cross-tier arrows: Proactive ↔ Core ═══ -->
+      <text x="85" y="264" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8" font-style="italic">IOCs · enrichment · watchlists</text>
+      <line x1="170" y1="250" x2="170" y2="272" stroke="#475569" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="310" y="264" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="8">deploy detections</text>
+      <line x1="292" y1="250" x2="292" y2="275" stroke="#39ff14" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-g)"/>
+      <text x="520" y="264" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="8" font-style="italic">lessons learned · coverage gaps</text>
+      <line x1="475" y1="275" x2="475" y2="250" stroke="#00f0ff" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-c)"/>
+
+      <!-- ══════════════ TIER 2: CORE OPERATIONS ══════════════ -->
+      <rect x="12" y="278" width="730" height="210" rx="8" fill="rgba(0,240,255,0.03)" stroke="rgba(0,240,255,0.2)" stroke-width="1.5"/>
+      <text x="22" y="296" fill="#00f0ff" font-family="Inter,sans-serif" font-size="11" font-weight="bold">CORE OPERATIONS</text>
+      <text x="155" y="296" fill="#475569" font-family="Inter,sans-serif" font-size="9">· the alert → incident pipeline</text>
+
+      <!-- 1: Monitoring & Alerting -->
+      <rect x="22" y="304" width="170" height="32" rx="6" fill="rgba(96,165,250,0.12)" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="107" y="325" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">1 · MONITORING</text>
+      <text x="28" y="352" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="352" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Log source onboarding &amp; coverage</text>
+      <text x="28" y="366" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="366" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">24/7 real-time monitoring</text>
+      <text x="28" y="380" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Alert generation &amp; enrichment</text>
+      <text x="28" y="394" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="394" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Alert lifecycle: create-tune-retire</text>
+      <text x="28" y="408" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="408" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">MTTD / MTTA evaluation</text>
+      <text x="28" y="422" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="422" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">False-positive tuning</text>
+      <text x="28" y="436" fill="#475569" font-family="Inter,sans-serif" font-size="9">○ Insider threat / UEBA (optional)</text>
+      <text x="28" y="454" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">MTTD</text>
+
+      <!-- Arrow 1→2 -->
+      <line x1="192" y1="320" x2="203" y2="320" stroke="#475569" stroke-width="1" marker-end="url(#sm-w)"/>
+      <text x="198" y="312" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7">alerts</text>
+
+      <!-- 2: Alert Triage (HIGHLIGHTED) -->
+      <rect x="205" y="304" width="175" height="32" rx="6" fill="rgba(0,240,255,0.15)" stroke="#00f0ff" stroke-width="2.5"/>
+      <text x="292" y="325" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">2 · ALERT TRIAGE</text>
+      <text x="211" y="352" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="352" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Validation: TP / FP / benign</text>
+      <text x="211" y="366" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="366" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Severity &amp; priority classification</text>
+      <text x="211" y="380" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Context: asset · identity · intel</text>
+      <text x="211" y="394" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="394" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Escalation T1 → T2 → T3 / IR</text>
+      <text x="211" y="408" fill="#00f0ff" font-family="Inter,sans-serif" font-size="9">○</text><text x="223" y="408" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Triage SLA tracking</text>
+      <text x="211" y="430" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="9">MTTA · triage SLA</text>
+
+      <!-- Arrow 2→3 -->
+      <line x1="380" y1="320" x2="391" y2="320" stroke="#475569" stroke-width="1" marker-end="url(#sm-w)"/>
+      <text x="386" y="312" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7">escalate</text>
+
+      <!-- 3: Incident Response -->
+      <rect x="393" y="304" width="165" height="32" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="475" y="325" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">3 · INCIDENT RESP</text>
+      <text x="399" y="352" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="352" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Declaration &amp; classification</text>
+      <text x="399" y="366" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="366" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Contain · eradicate · recover</text>
+      <text x="399" y="380" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">MTTR / MTTC evaluation</text>
+      <text x="399" y="394" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="394" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Comms &amp; war-room coordination</text>
+      <text x="399" y="408" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="408" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Post-incident review</text>
+      <text x="399" y="422" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="411" y="422" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Playbook execution &amp; upkeep</text>
+      <text x="399" y="444" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">MTTR · MTTC</text>
+
+      <!-- Arrow 3→8 -->
+      <line x1="558" y1="320" x2="566" y2="320" stroke="#475569" stroke-width="1" marker-end="url(#sm-w)"/>
+      <text x="562" y="312" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7">deep-dive</text>
+
+      <!-- 8: Forensics -->
+      <rect x="568" y="304" width="168" height="32" rx="6" fill="rgba(167,139,250,0.12)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="652" y="325" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">8 · FORENSICS</text>
+      <text x="574" y="352" fill="#a78bfa" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="352" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Evidence &amp; chain of custody</text>
+      <text x="574" y="366" fill="#a78bfa" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="366" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Disk / memory / network forensics</text>
+      <text x="574" y="380" fill="#a78bfa" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Malware reverse engineering</text>
+      <text x="574" y="394" fill="#a78bfa" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="394" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Root cause analysis</text>
+
+      <!-- ═══ Cross-tier arrows: Core ↔ Platform ═══ -->
+      <line x1="170" y1="488" x2="170" y2="510" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#sm-w)"/>
+      <text x="100" y="505" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8">telemetry · data quality</text>
+      <line x1="530" y1="510" x2="530" y2="488" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#sm-w)"/>
+      <text x="575" y="505" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8">auto-enrichment · response</text>
+
+      <!-- ══════════════ TIER 3: PLATFORM FOUNDATION ══════════════ -->
+      <rect x="12" y="514" width="730" height="108" rx="8" fill="rgba(251,191,36,0.03)" stroke="rgba(251,191,36,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="22" y="532" fill="#fbbf24" font-family="Inter,sans-serif" font-size="11" font-weight="bold">PLATFORM FOUNDATION</text>
+      <text x="200" y="532" fill="#475569" font-family="Inter,sans-serif" font-size="9">· underpins every function</text>
+
+      <!-- 9: SIEM & Platform Engineering -->
+      <rect x="22" y="540" width="350" height="32" rx="6" fill="rgba(96,165,250,0.12)" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="197" y="561" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">9 · SIEM &amp; PLATFORM ENG</text>
+      <text x="28" y="588" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="588" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Ingestion &amp; pipeline health</text>
+      <text x="215" y="588" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="227" y="588" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Retention &amp; licensing mgmt</text>
+      <text x="28" y="604" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="40" y="604" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Parsing / normalization quality</text>
+      <text x="215" y="604" fill="#60a5fa" font-family="Inter,sans-serif" font-size="9">○</text><text x="227" y="604" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Availability &amp; performance</text>
+
+      <!-- 10: Automation & SOAR -->
+      <rect x="388" y="540" width="348" height="32" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="562" y="561" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">10 · AUTOMATION &amp; SOAR</text>
+      <text x="394" y="588" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="406" y="588" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Playbook development &amp; upkeep</text>
+      <text x="574" y="588" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="588" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">ROI: time saved per alert</text>
+      <text x="394" y="604" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="406" y="604" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Enrichment &amp; response automation</text>
+      <text x="574" y="604" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="586" y="604" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Integration / connector mgmt</text>
+
+      <!-- ══════════════ BOTTOM CALLOUT ══════════════ -->
+      <rect x="220" y="634" width="500" height="30" rx="6" fill="rgba(0,240,255,0.06)" stroke="rgba(0,240,255,0.2)" stroke-width="1"/>
+      <text x="470" y="650" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">Alert triage</text>
+      <text x="470" y="660" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">has the highest volume, most measurable outcomes, and heaviest analyst burden. Build it first.</text>
+
+      <!-- ══════════════ RIGHT COLUMN: GOVERNANCE & PEOPLE ══════════════ -->
+      <rect x="755" y="55" width="195" height="567" rx="8" fill="rgba(57,255,20,0.03)" stroke="rgba(57,255,20,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="852" y="76" text-anchor="middle" fill="#39ff14" font-family="Inter,sans-serif" font-size="10" font-weight="bold">GOVERNANCE &amp; PEOPLE</text>
+      <text x="852" y="90" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="8">cross-cutting · measures · governs</text>
+      <text x="852" y="102" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="8">staffs every band</text>
+
+      <!-- 11: Reporting -->
+      <rect x="767" y="115" width="172" height="32" rx="6" fill="rgba(255,71,87,0.12)" stroke="#ff4757" stroke-width="1.5"/>
+      <text x="853" y="136" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">11 · REPORTING</text>
+      <text x="773" y="162" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="162" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">KPI / SLA dashboards</text>
+      <text x="773" y="176" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="176" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Executive &amp; compliance</text>
+      <text x="773" y="190" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="190" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Audit support &amp; evidence</text>
+      <text x="773" y="204" fill="#ff4757" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="204" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Maturity (SOC-CMM)</text>
+
+      <!-- 12: People & Shift Ops -->
+      <rect x="767" y="225" width="172" height="32" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="853" y="246" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">12 · PEOPLE OPS</text>
+      <text x="773" y="272" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="272" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Shift scheduling &amp; handover</text>
+      <text x="773" y="286" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="286" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Training &amp; skill development</text>
+      <text x="773" y="300" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="300" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Tabletops &amp; drills</text>
+      <text x="773" y="314" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="314" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">On-call &amp; surge mgmt</text>
+      <text x="773" y="328" fill="#ff8c00" font-family="Inter,sans-serif" font-size="9">○</text><text x="785" y="328" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9">Burnout &amp; retention mgmt</text>
+      <text x="773" y="342" fill="#475569" font-family="Inter,sans-serif" font-size="9">○ Knowledge mgmt (opt)</text>
+
+      <!-- KEY SOC METRICS box -->
+      <rect x="767" y="365" width="172" height="95" rx="8" fill="rgba(0,240,255,0.05)" stroke="rgba(0,240,255,0.25)" stroke-width="1"/>
+      <text x="853" y="386" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">KEY SOC METRICS</text>
+      <text x="779" y="406" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">MTTD</text><text x="818" y="406" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8.5">mean time to detect</text>
+      <text x="779" y="422" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="9">MTTA</text><text x="818" y="422" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8.5">mean time to acknowledge</text>
+      <text x="779" y="438" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">MTTR</text><text x="818" y="438" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8.5">mean time to respond</text>
+      <text x="779" y="454" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="9">MTTC</text><text x="818" y="454" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8.5">mean time to contain</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 19: SOC OPS MAP — AGENTIC LENS
+     ══════════════════════════════════════════════════════════════ -->
+<section data-transition="fade" style="padding:0 !important;">
+  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+    <svg viewBox="0 0 960 680" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;" text-rendering="geometricPrecision">
+      <defs>
+        <marker id="al-w" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#475569" stroke-width="1.2"/></marker>
+        <marker id="al-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1.2"/></marker>
+        <marker id="al-c" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#00f0ff" stroke-width="1.2"/></marker>
+      </defs>
+
+      <!-- ══ TITLE ══ -->
+      <text x="20" y="22" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="16" font-weight="bold" letter-spacing="2">SOC OPERATIONS MAP · AGENTIC LENS</text>
+      <text x="20" y="38" fill="#475569" font-family="Inter,sans-serif" font-size="10">Phase 2a · where agentic AI (LLM + RAG + tools) lifts efficiency</text>
+
+      <!-- ══ AGENTIC EFFICIENCY GAIN LEGEND ══ -->
+      <text x="20" y="56" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">AGENTIC EFFICIENCY GAIN</text>
+      <circle cx="220" cy="53" r="4" fill="#39ff14"/><text x="228" y="57" fill="#39ff14" font-family="Inter,sans-serif" font-size="8" font-weight="bold">HIGH</text><text x="255" y="57" fill="#475569" font-family="Inter,sans-serif" font-size="8">· agent runs it</text>
+      <circle cx="360" cy="53" r="4" fill="#ff8c00"/><text x="368" y="57" fill="#ff8c00" font-family="Inter,sans-serif" font-size="8" font-weight="bold">MED</text><text x="392" y="57" fill="#475569" font-family="Inter,sans-serif" font-size="8">· agent drafts, human validates</text>
+      <circle cx="575" cy="53" r="4" fill="none" stroke="#94a3b8" stroke-width="1.5"/><text x="583" y="57" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8" font-weight="bold">LOW</text><text x="607" y="57" fill="#475569" font-family="Inter,sans-serif" font-size="8">· marginal or deliberately human</text>
+
+      <!-- ══ SOC LOOP (top right) ══ -->
+      <g transform="translate(555,4)">
+        <rect x="20" y="14" width="55" height="18" rx="4" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="0.8"/>
+        <text x="47" y="27" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">Collect</text>
+        <line x1="75" y1="23" x2="88" y2="23" stroke="#475569" stroke-width="0.8" marker-end="url(#al-w)"/>
+        <rect x="90" y="14" width="52" height="18" rx="4" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="0.8"/>
+        <text x="116" y="27" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8">Detect</text>
+        <line x1="142" y1="23" x2="155" y2="23" stroke="#475569" stroke-width="0.8" marker-end="url(#al-w)"/>
+        <rect x="157" y="14" width="52" height="18" rx="4" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="0.8"/>
+        <text x="183" y="27" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="8">Triage</text>
+        <line x1="209" y1="23" x2="222" y2="23" stroke="#475569" stroke-width="0.8" marker-end="url(#al-w)"/>
+        <rect x="224" y="14" width="62" height="18" rx="4" fill="rgba(255,140,0,0.08)" stroke="#ff8c00" stroke-width="0.8"/>
+        <text x="255" y="27" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="8">Respond</text>
+        <line x1="286" y1="23" x2="299" y2="23" stroke="#475569" stroke-width="0.8" marker-end="url(#al-w)"/>
+        <rect x="301" y="14" width="48" height="18" rx="4" fill="rgba(57,255,20,0.08)" stroke="#39ff14" stroke-width="0.8"/>
+        <text x="325" y="27" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="8">Learn</text>
+        <text x="195" y="44" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="7.5" font-style="italic">THE SOC LOOP · continuous improvement</text>
+      </g>
+
+      <!-- ══════════════ TIER 1: PROACTIVE & INTELLIGENCE ══════════════ -->
+      <rect x="12" y="66" width="730" height="175" rx="8" fill="rgba(167,139,250,0.03)" stroke="rgba(167,139,250,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="22" y="81" fill="#a78bfa" font-family="Inter,sans-serif" font-size="10" font-weight="bold">PROACTIVE &amp; INTELLIGENCE</text>
+      <text x="220" y="81" fill="#475569" font-family="Inter,sans-serif" font-size="8">· get ahead of the adversary</text>
+
+      <!-- 5: Threat Intel -->
+      <rect x="22" y="88" width="170" height="28" rx="6" fill="rgba(255,71,87,0.12)" stroke="#ff4757" stroke-width="1.5"/>
+      <text x="107" y="107" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">5 · THREAT INTEL</text>
+      <text x="28" y="130" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Feed management &amp; curation</text><circle cx="188" cy="127" r="3.5" fill="#39ff14"/>
+      <text x="28" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">IOC / IOA operationalization</text><circle cx="188" cy="139" r="3.5" fill="#39ff14"/>
+      <text x="28" y="154" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Actor &amp; campaign tracking</text><circle cx="188" cy="151" r="3.5" fill="#39ff14"/>
+      <text x="28" y="166" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">PIRs &amp; intel dissemination</text><circle cx="188" cy="163" r="3.5" fill="#39ff14"/>
+      <text x="28" y="178" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Strategic / tactical reporting</text><circle cx="188" cy="175" r="3.5" fill="#39ff14"/>
+      <text x="28" y="190" fill="#475569" font-family="Inter,sans-serif" font-size="8">Digital risk · dark web (optional)</text><circle cx="188" cy="187" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+
+      <!-- Arrow 5→4 -->
+      <line x1="192" y1="102" x2="203" y2="102" stroke="#475569" stroke-width="1" marker-end="url(#al-w)"/>
+      <text x="198" y="93" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="8">TTPs</text>
+
+      <!-- 4: Detection Eng -->
+      <rect x="205" y="88" width="175" height="28" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="292" y="107" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">4 · DETECTION ENG</text>
+      <text x="211" y="130" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Use case lifecycle management</text><circle cx="376" cy="127" r="3.5" fill="#39ff14"/>
+      <text x="211" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Rule / analytic dev &amp; testing</text><circle cx="376" cy="139" r="3.5" fill="#39ff14"/>
+      <text x="211" y="154" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">MITRE ATT&amp;CK coverage mapping</text><circle cx="376" cy="151" r="3.5" fill="#39ff14"/>
+      <text x="211" y="166" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Purple team validation</text><circle cx="376" cy="163" r="3.5" fill="#39ff14"/>
+      <text x="211" y="178" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Detection-as-code / versioning</text><circle cx="376" cy="175" r="3.5" fill="#39ff14"/>
+
+      <!-- Arrow 4→6 -->
+      <line x1="380" y1="102" x2="391" y2="102" stroke="#475569" stroke-width="1" marker-end="url(#al-w)"/>
+      <text x="386" y="93" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="8">findings</text>
+
+      <!-- 6: Threat Hunting -->
+      <rect x="393" y="88" width="165" height="28" rx="6" fill="rgba(0,240,255,0.12)" stroke="#00f0ff" stroke-width="1.5"/>
+      <text x="475" y="107" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">6 · THREAT HUNTING</text>
+      <text x="399" y="130" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Hypothesis-driven hunts</text><circle cx="554" cy="127" r="3.5" fill="#39ff14"/>
+      <text x="399" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Baseline &amp; anomaly analysis</text><circle cx="554" cy="139" r="3.5" fill="#39ff14"/>
+      <text x="399" y="154" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Hunt cadence &amp; backlog mgmt</text><circle cx="554" cy="151" r="3.5" fill="#39ff14"/>
+      <text x="399" y="166" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Findings → detection pipeline</text><circle cx="554" cy="163" r="3.5" fill="#39ff14"/>
+
+      <!-- 7: Vuln Mgmt -->
+      <rect x="568" y="88" width="168" height="28" rx="6" fill="rgba(251,191,36,0.12)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="652" y="107" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">7 · VULN MGMT</text>
+      <text x="574" y="130" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Scanning &amp; asset discovery</text><circle cx="732" cy="127" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="574" y="142" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Risk-based prioritization</text><circle cx="732" cy="139" r="3.5" fill="#39ff14"/>
+      <text x="574" y="154" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Remediation SLA tracking</text><circle cx="732" cy="151" r="3.5" fill="#39ff14"/>
+      <text x="574" y="166" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Attack-surface reporting</text><circle cx="732" cy="163" r="3.5" fill="#39ff14"/>
+
+      <!-- ═══ Cross-tier arrows ═══ -->
+      <text x="85" y="252" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7.5" font-style="italic">IOCs · enrichment · watchlists</text>
+      <line x1="170" y1="241" x2="170" y2="258" stroke="#475569" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="310" y="252" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="7.5">deploy detections</text>
+      <line x1="292" y1="241" x2="292" y2="261" stroke="#39ff14" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#al-g)"/>
+      <text x="520" y="252" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="7.5" font-style="italic">lessons learned · coverage gaps</text>
+      <line x1="475" y1="261" x2="475" y2="241" stroke="#00f0ff" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#al-c)"/>
+
+      <!-- ══════════════ TIER 2: CORE OPERATIONS ══════════════ -->
+      <rect x="12" y="264" width="730" height="205" rx="8" fill="rgba(0,240,255,0.03)" stroke="rgba(0,240,255,0.2)" stroke-width="1.5"/>
+      <text x="22" y="280" fill="#00f0ff" font-family="Inter,sans-serif" font-size="10" font-weight="bold">CORE OPERATIONS</text>
+      <text x="150" y="280" fill="#475569" font-family="Inter,sans-serif" font-size="8">· the alert → incident pipeline</text>
+
+      <!-- HIGHEST ROI callout -->
+      <rect x="295" y="270" width="200" height="16" rx="3" fill="rgba(0,240,255,0.1)" stroke="#00f0ff" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="395" y="281" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="7.5" font-weight="bold">HIGHEST ROI – deploy agents here first</text>
+
+      <!-- 1: Monitoring -->
+      <rect x="22" y="290" width="170" height="28" rx="6" fill="rgba(96,165,250,0.12)" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="107" y="309" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">1 · MONITORING</text>
+      <text x="28" y="332" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Log source onboarding &amp; coverage</text><circle cx="188" cy="329" r="3.5" fill="#39ff14"/>
+      <text x="28" y="344" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">24/7 real-time monitoring</text><circle cx="188" cy="341" r="3.5" fill="#39ff14"/>
+      <text x="28" y="356" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Alert generation &amp; enrichment</text><circle cx="188" cy="353" r="3.5" fill="#39ff14"/>
+      <text x="28" y="368" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Alert lifecycle: create-tune-retire</text><circle cx="188" cy="365" r="3.5" fill="#39ff14"/>
+      <text x="28" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">MTTD / MTTA evaluation</text><circle cx="188" cy="377" r="3.5" fill="#ff8c00"/>
+      <text x="28" y="392" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">False-positive tuning</text><circle cx="188" cy="389" r="3.5" fill="#39ff14"/>
+      <text x="28" y="404" fill="#475569" font-family="Inter,sans-serif" font-size="8">Insider threat / UEBA (optional)</text><circle cx="188" cy="401" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="28" y="420" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="8">MTTD</text>
+
+      <!-- Arrow 1→2 -->
+      <line x1="192" y1="304" x2="203" y2="304" stroke="#475569" stroke-width="1" marker-end="url(#al-w)"/>
+      <text x="198" y="295" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="8">alerts</text>
+
+      <!-- 2: Alert Triage (HIGHLIGHTED) -->
+      <rect x="205" y="290" width="175" height="28" rx="6" fill="rgba(0,240,255,0.15)" stroke="#00f0ff" stroke-width="2.5"/>
+      <text x="292" y="309" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">2 · ALERT TRIAGE</text>
+      <text x="211" y="332" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Validation: TP / FP / benign</text><circle cx="376" cy="329" r="3.5" fill="#39ff14"/>
+      <text x="211" y="344" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Severity &amp; priority classification</text><circle cx="376" cy="341" r="3.5" fill="#39ff14"/>
+      <text x="211" y="356" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Context: asset · identity · intel</text><circle cx="376" cy="353" r="3.5" fill="#39ff14"/>
+      <text x="211" y="368" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Escalation T1 → T2 → T3 / IR</text><circle cx="376" cy="365" r="3.5" fill="#ff8c00"/>
+      <text x="211" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Triage SLA tracking</text><circle cx="376" cy="377" r="3.5" fill="#ff8c00"/>
+      <text x="211" y="400" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="8">MTTA · triage SLA</text>
+
+      <!-- Arrow 2→3 -->
+      <line x1="380" y1="304" x2="391" y2="304" stroke="#475569" stroke-width="1" marker-end="url(#al-w)"/>
+      <text x="386" y="295" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="8">escalate</text>
+
+      <!-- 3: Incident Response -->
+      <rect x="393" y="290" width="165" height="28" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="475" y="309" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">3 · INCIDENT RESP</text>
+      <text x="399" y="332" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Declaration &amp; classification</text><circle cx="554" cy="329" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="399" y="344" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Contain · eradicate · recover</text><circle cx="554" cy="341" r="3.5" fill="#39ff14"/>
+      <text x="399" y="356" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">MTTR / MTTC evaluation</text><circle cx="554" cy="353" r="3.5" fill="#ff8c00"/>
+      <text x="399" y="368" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Comms &amp; war-room coordination</text><circle cx="554" cy="365" r="3.5" fill="#39ff14"/>
+      <text x="399" y="380" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Post-incident review</text><circle cx="554" cy="377" r="3.5" fill="#39ff14"/>
+      <text x="399" y="392" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Playbook execution &amp; upkeep</text><circle cx="554" cy="389" r="3.5" fill="#39ff14"/>
+      <text x="399" y="410" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="8">MTTR · MTTC</text>
+
+      <!-- Arrow 3→8 -->
+      <line x1="558" y1="304" x2="566" y2="304" stroke="#475569" stroke-width="1" marker-end="url(#al-w)"/>
+      <text x="562" y="295" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="8">deep-dive</text>
+
+      <!-- 8: Forensics -->
+      <rect x="568" y="290" width="168" height="28" rx="6" fill="rgba(167,139,250,0.12)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="652" y="309" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">8 · FORENSICS</text>
+      <text x="574" y="332" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Evidence &amp; chain of custody</text><circle cx="732" cy="329" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="574" y="344" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Disk / memory / network forensics</text><circle cx="732" cy="341" r="3.5" fill="#39ff14"/>
+      <text x="574" y="356" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Malware reverse engineering</text><circle cx="732" cy="353" r="3.5" fill="#39ff14"/>
+      <text x="574" y="368" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Root cause analysis</text><circle cx="732" cy="365" r="3.5" fill="#39ff14"/>
+
+      <!-- ═══ Cross-tier arrows: Core ↔ Platform ═══ -->
+      <line x1="170" y1="469" x2="170" y2="490" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#al-w)"/>
+      <text x="100" y="485" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7.5">telemetry · data quality</text>
+      <line x1="530" y1="490" x2="530" y2="469" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#al-w)"/>
+      <text x="570" y="485" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7.5">auto-enrichment · response</text>
+
+      <!-- ══════════════ TIER 3: PLATFORM FOUNDATION ══════════════ -->
+      <rect x="12" y="494" width="730" height="100" rx="8" fill="rgba(251,191,36,0.03)" stroke="rgba(251,191,36,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="22" y="510" fill="#fbbf24" font-family="Inter,sans-serif" font-size="10" font-weight="bold">PLATFORM FOUNDATION</text>
+      <text x="195" y="510" fill="#475569" font-family="Inter,sans-serif" font-size="8">· underpins every function</text>
+
+      <!-- 9: SIEM & Platform -->
+      <rect x="22" y="518" width="350" height="28" rx="6" fill="rgba(96,165,250,0.12)" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="197" y="537" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">9 · SIEM &amp; PLATFORM ENG</text>
+      <text x="28" y="560" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Ingestion &amp; pipeline health</text><circle cx="188" cy="557" r="3.5" fill="#ff8c00"/>
+      <text x="215" y="560" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Retention &amp; licensing mgmt</text><circle cx="370" cy="557" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="28" y="574" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Parsing / normalization quality</text><circle cx="188" cy="571" r="3.5" fill="#39ff14"/>
+      <text x="215" y="574" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Availability &amp; performance</text><circle cx="370" cy="571" r="3.5" fill="#ff8c00"/>
+
+      <!-- 10: Automation & SOAR -->
+      <rect x="388" y="518" width="348" height="28" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="562" y="537" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">10 · AUTOMATION &amp; SOAR</text>
+      <text x="394" y="560" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Playbook development &amp; upkeep</text><circle cx="554" cy="557" r="3.5" fill="#39ff14"/>
+      <text x="574" y="560" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">ROI: time saved per alert</text><circle cx="730" cy="557" r="3.5" fill="#ff8c00"/>
+      <text x="394" y="574" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Enrichment &amp; response automation</text><circle cx="554" cy="571" r="3.5" fill="#39ff14"/>
+      <text x="574" y="574" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Integration / connector mgmt</text><circle cx="730" cy="571" r="3.5" fill="#ff8c00"/>
+
+      <!-- ══ BOTTOM CALLOUT ══ -->
+      <rect x="220" y="605" width="500" height="28" rx="6" fill="rgba(0,240,255,0.06)" stroke="rgba(0,240,255,0.2)" stroke-width="1"/>
+      <text x="470" y="620" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">Alert triage</text>
+      <text x="470" y="630" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">has the highest volume, most measurable outcomes, and heaviest analyst burden. Build it first.</text>
+
+      <!-- ══════════════ RIGHT COLUMN: GOVERNANCE & PEOPLE ══════════════ -->
+      <rect x="755" y="66" width="195" height="528" rx="8" fill="rgba(57,255,20,0.03)" stroke="rgba(57,255,20,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="852" y="82" text-anchor="middle" fill="#39ff14" font-family="Inter,sans-serif" font-size="9" font-weight="bold">GOVERNANCE &amp; PEOPLE</text>
+      <text x="852" y="93" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">cross-cutting · measures · governs</text>
+
+      <!-- 11: Reporting -->
+      <rect x="767" y="102" width="172" height="28" rx="6" fill="rgba(255,71,87,0.12)" stroke="#ff4757" stroke-width="1.5"/>
+      <text x="853" y="121" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">11 · REPORTING</text>
+      <text x="773" y="144" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">KPI / SLA dashboards</text><circle cx="935" cy="141" r="3.5" fill="#39ff14"/>
+      <text x="773" y="157" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Executive &amp; compliance</text><circle cx="935" cy="154" r="3.5" fill="#39ff14"/>
+      <text x="773" y="170" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Audit support &amp; evidence</text><circle cx="935" cy="167" r="3.5" fill="#39ff14"/>
+      <text x="773" y="183" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Maturity (SOC-CMM)</text><circle cx="935" cy="180" r="3.5" fill="#39ff14"/>
+
+      <!-- 12: People & Shift Ops -->
+      <rect x="767" y="200" width="172" height="28" rx="6" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="853" y="219" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">12 · PEOPLE OPS</text>
+      <text x="773" y="242" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Shift scheduling &amp; handover</text><circle cx="935" cy="239" r="3.5" fill="#39ff14"/>
+      <text x="773" y="255" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Training &amp; skill development</text><circle cx="935" cy="252" r="3.5" fill="#39ff14"/>
+      <text x="773" y="268" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Tabletops &amp; drills</text><circle cx="935" cy="265" r="3.5" fill="#ff8c00"/>
+      <text x="773" y="281" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">On-call &amp; surge mgmt</text><circle cx="935" cy="278" r="3.5" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+      <text x="773" y="294" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Burnout &amp; retention mgmt</text><circle cx="935" cy="291" r="3.5" fill="#ff8c00"/>
+      <text x="773" y="307" fill="#475569" font-family="Inter,sans-serif" font-size="8">Knowledge mgmt (opt)</text><circle cx="935" cy="304" r="3.5" fill="#39ff14"/>
+
+      <!-- KEY SOC METRICS box -->
+      <rect x="767" y="325" width="172" height="90" rx="8" fill="rgba(0,240,255,0.05)" stroke="rgba(0,240,255,0.25)" stroke-width="1"/>
+      <text x="853" y="344" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">KEY SOC METRICS</text>
+      <text x="779" y="362" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="8">MTTD</text><text x="812" y="362" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">mean time to detect</text>
+      <text x="779" y="376" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="8">MTTA</text><text x="812" y="376" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">mean time to acknowledge</text>
+      <text x="779" y="390" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="8">MTTR</text><text x="812" y="390" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">mean time to respond</text>
+      <text x="779" y="404" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="8">MTTC</text><text x="812" y="404" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">mean time to contain</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 20: THE AGENTIC SOC — FULL ARCHITECTURE
+     ══════════════════════════════════════════════════════════════ -->
+<section data-transition="fade" style="padding:0 !important;">
+  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+    <svg viewBox="0 0 960 680" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;" text-rendering="geometricPrecision">
+      <defs>
+        <marker id="as-d" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#475569" stroke-width="1.2"/></marker>
+        <marker id="as-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1.2"/></marker>
+        <marker id="as-c" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#00f0ff" stroke-width="1.2"/></marker>
+      </defs>
+
+      <!-- ══ TITLE ══ -->
+      <text x="20" y="24" fill="#ffffff" font-family="JetBrains Mono,monospace" font-size="20" font-weight="bold" letter-spacing="3">THE AGENTIC SOC</text>
+      <text x="20" y="42" fill="#475569" font-family="Inter,sans-serif" font-size="10">Phase 2b · target operating model · agents execute, humans command</text>
+
+      <!-- ══ READING KEY (right side) ══ -->
+      <rect x="785" y="50" width="165" height="125" rx="6" fill="rgba(148,163,184,0.04)" stroke="rgba(148,163,184,0.15)" stroke-width="1"/>
+      <text x="867" y="66" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">READING KEY</text>
+      <text x="867" y="78" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">anatomy of agentic AI</text>
+      <circle cx="797" cy="94" r="4" fill="rgba(57,255,20,0.15)" stroke="#39ff14" stroke-width="0.8"/>
+      <text x="806" y="97" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="8" font-weight="bold">HUMAN</text><text x="850" y="97" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">the judgment</text>
+      <circle cx="797" cy="112" r="4" fill="rgba(0,240,255,0.15)" stroke="#00f0ff" stroke-width="0.8"/>
+      <text x="806" y="115" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="8" font-weight="bold">LLM</text><text x="832" y="115" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">the brain</text>
+      <circle cx="797" cy="130" r="4" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="0.8"/>
+      <text x="806" y="133" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8" font-weight="bold">RAG</text><text x="832" y="133" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">the memory</text>
+      <circle cx="797" cy="148" r="4" fill="rgba(96,165,250,0.15)" stroke="#60a5fa" stroke-width="0.8"/>
+      <text x="806" y="151" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8" font-weight="bold">TOOLS</text><text x="842" y="151" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">the hands</text>
+      <text x="795" y="168" fill="#475569" font-family="Inter,sans-serif" font-size="7" font-style="italic">the only non-negotiable layer</text>
+
+      <!-- ═══════════ HUMAN COMMAND LAYER ═══════════ -->
+      <rect x="12" y="50" width="768" height="105" rx="8" fill="rgba(57,255,20,0.03)" stroke="rgba(57,255,20,0.2)" stroke-width="1.5"/>
+      <text x="22" y="66" fill="#39ff14" font-family="Inter,sans-serif" font-size="10" font-weight="bold">HUMAN COMMAND LAYER</text>
+      <text x="210" y="66" fill="#475569" font-family="Inter,sans-serif" font-size="8">· analysts move up the stack</text>
+      <text x="22" y="84" fill="#94a3b8" font-family="Inter,sans-serif" font-size="9.5" font-weight="bold">From first-touch triage → to supervision, judgment &amp; quality control</text>
+      <!-- 2 cols × 3 rows -->
+      <text x="28" y="100" fill="#ff4757" font-family="Inter,sans-serif" font-size="8">○</text><text x="38" y="100" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Authorize containment &amp; major comms</text>
+      <text x="28" y="113" fill="#ff4757" font-family="Inter,sans-serif" font-size="8">○</text><text x="38" y="113" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Lead war-room &amp; sev-1 response</text>
+      <text x="28" y="126" fill="#ff4757" font-family="Inter,sans-serif" font-size="8">○</text><text x="38" y="126" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Set guardrails · tune agent policies</text>
+      <text x="275" y="100" fill="#ff4757" font-family="Inter,sans-serif" font-size="8">○</text><text x="285" y="100" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Own evidence custody &amp; legal steps</text>
+      <text x="275" y="113" fill="#ff4757" font-family="Inter,sans-serif" font-size="8">○</text><text x="285" y="113" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">QA-sample agent verdicts &amp; drift</text>
+      <text x="275" y="126" fill="#ff4757" font-family="Inter,sans-serif" font-size="8">○</text><text x="285" y="126" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">Handle novel &amp; ambiguous threats</text>
+
+      <!-- WHAT MOVES box -->
+      <rect x="540" y="58" width="225" height="92" rx="5" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.2)" stroke-width="1"/>
+      <text x="652" y="73" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">WHAT MOVES</text>
+      <text x="550" y="89" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="7.5">MTTA</text><text x="582" y="89" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">minutes → seconds</text>
+      <text x="550" y="103" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="7.5">Triage</text><text x="590" y="103" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">majority auto-closed</text>
+      <text x="550" y="117" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="7.5">MTTR</text><text x="582" y="117" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">hours → minutes</text>
+      <text x="550" y="131" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="7.5">T1 role</text><text x="592" y="131" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">tail → supervision</text>
+
+      <!-- ═══ Arrows: escalations / approvals ═══ -->
+      <text x="370" y="167" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8">escalations ↑</text>
+      <text x="530" y="167" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8">↓ approvals</text>
+
+      <!-- ═══════════ AGENT EXECUTION LAYER ═══════════ -->
+      <text x="22" y="186" fill="#475569" font-family="Inter,sans-serif" font-size="9">AGENT EXECUTION LAYER · an orchestrated mesh, not a script</text>
+
+      <!-- Orchestrator -->
+      <rect x="100" y="192" width="660" height="28" rx="6" fill="rgba(57,255,20,0.08)" stroke="#39ff14" stroke-width="1.5"/>
+      <text x="430" y="211" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">ORCHESTRATOR</text>
+      <text x="580" y="211" fill="#475569" font-family="Inter,sans-serif" font-size="8">· routes missions, sequences agents, enforces guardrails &amp; HITL gates</text>
+
+      <!-- "delegates missions" -->
+      <text x="430" y="232" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="7.5" font-style="italic">delegates missions</text>
+      <line x1="430" y1="234" x2="430" y2="244" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+
+      <!-- LLM label (right side) -->
+      <text x="790" y="270" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">LLM · the brain</text>
+      <text x="790" y="282" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">reasons · plans · picks next step</text>
+
+      <!-- ═══ AGENT ROW 1 ═══ -->
+      <rect x="18" y="248" width="182" height="72" rx="6" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="1.5"/>
+      <text x="109" y="264" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">TRIAGE AGENT · fn 1-2</text>
+      <text x="26" y="280" fill="#00f0ff" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="35" y="280" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">validate TP/FP at machine speed</text>
+      <text x="26" y="292" fill="#00f0ff" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="35" y="292" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">enrich: asset · identity · intel</text>
+      <text x="26" y="304" fill="#00f0ff" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="35" y="304" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">auto-close FPs with evidence log</text>
+
+      <rect x="206" y="248" width="182" height="72" rx="6" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="297" y="264" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">INVESTIGATION · fn 3+8</text>
+      <text x="214" y="280" fill="#60a5fa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="223" y="280" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">reconstruct attack timelines</text>
+      <text x="214" y="292" fill="#60a5fa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="223" y="292" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">correlate evidence across tools</text>
+      <text x="214" y="304" fill="#60a5fa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="223" y="304" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">draft root-cause analysis</text>
+
+      <rect x="394" y="248" width="182" height="72" rx="6" fill="rgba(255,140,0,0.08)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="485" y="264" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">RESPONSE AGENT · fn 3</text>
+      <text x="402" y="280" fill="#ff8c00" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="411" y="280" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">execute approved containment</text>
+      <text x="402" y="292" fill="#ff8c00" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="411" y="292" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">draft comms &amp; status updates</text>
+      <text x="402" y="304" fill="#ff8c00" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="411" y="304" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">draft post-incident review</text>
+
+      <rect x="582" y="248" width="182" height="72" rx="6" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="673" y="264" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">DETECTION AGENT · fn 4</text>
+      <text x="590" y="280" fill="#a78bfa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="599" y="280" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">draft rules from intel &amp; hunts</text>
+      <text x="590" y="292" fill="#a78bfa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="599" y="292" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">scan ATT&amp;CK coverage gaps</text>
+      <text x="590" y="304" fill="#a78bfa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="599" y="304" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">generate detection test cases</text>
+
+      <!-- ═══ AGENT ROW 2 ═══ -->
+      <rect x="18" y="328" width="182" height="72" rx="6" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="109" y="344" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">INTEL AGENT · fn 5</text>
+      <text x="26" y="360" fill="#60a5fa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="35" y="360" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">ingest · dedup · curate feeds</text>
+      <text x="26" y="372" fill="#60a5fa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="35" y="372" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">extract IOCs from any report</text>
+      <text x="26" y="384" fill="#60a5fa" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="35" y="384" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">summarize per audience</text>
+
+      <rect x="206" y="328" width="182" height="72" rx="6" fill="rgba(57,255,20,0.08)" stroke="#39ff14" stroke-width="1.5"/>
+      <text x="297" y="344" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">HUNT AGENT · fn 6</text>
+      <text x="214" y="360" fill="#39ff14" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="223" y="360" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">draft queries from hypotheses</text>
+      <text x="214" y="372" fill="#39ff14" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="223" y="372" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">surface &amp; explain anomalies</text>
+      <text x="214" y="384" fill="#39ff14" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="223" y="384" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">pipe findings → Detection Agent</text>
+
+      <rect x="394" y="328" width="182" height="72" rx="6" fill="rgba(251,191,36,0.08)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="485" y="344" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">EXPOSURE AGENT · fn 7</text>
+      <text x="402" y="360" fill="#fbbf24" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="411" y="360" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">risk-rank vulns w/ biz context</text>
+      <text x="402" y="372" fill="#fbbf24" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="411" y="372" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">draft remediation tickets</text>
+      <text x="402" y="384" fill="#fbbf24" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="411" y="384" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">chase SLAs · nudge owners</text>
+
+      <rect x="582" y="328" width="182" height="72" rx="6" fill="rgba(148,163,184,0.08)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="673" y="344" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">OPS &amp; REPORTING · fn 9-12</text>
+      <text x="590" y="360" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="599" y="360" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">fix parsers · watch pipeline</text>
+      <text x="590" y="372" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="599" y="372" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">narrate KPIs &amp; exec reports</text>
+      <text x="590" y="384" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">○</text><text x="599" y="384" fill="#94a3b8" font-family="Inter,sans-serif" font-size="7.5">handovers &amp; runbook upkeep</text>
+
+      <!-- ═══════════ ALERT FLOW ═══════════ -->
+      <text x="22" y="420" fill="#475569" font-family="Inter,sans-serif" font-size="9">ALERT FLOW · the new pipeline</text>
+      <rect x="18" y="426" width="74" height="24" rx="4" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="55" y="442" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">telemetry</text>
+      <line x1="92" y1="438" x2="108" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <rect x="110" y="426" width="120" height="24" rx="4" fill="rgba(0,240,255,0.12)" stroke="#00f0ff" stroke-width="1.5"/>
+      <text x="170" y="442" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="8" font-weight="bold">TRIAGE AGENTS</text>
+      <line x1="230" y1="438" x2="246" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <text x="255" y="442" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">case file</text>
+      <line x1="290" y1="438" x2="306" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <!-- Human Gate diamond -->
+      <polygon points="355,426 380,438 355,450 330,438" fill="rgba(57,255,20,0.08)" stroke="#39ff14" stroke-width="1.5"/>
+      <text x="355" y="442" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="7" font-weight="bold">HUMAN GATE</text>
+      <line x1="380" y1="438" x2="396" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <text x="403" y="442" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">approved</text>
+      <line x1="440" y1="438" x2="456" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <rect x="458" y="426" width="150" height="24" rx="4" fill="rgba(255,140,0,0.12)" stroke="#ff8c00" stroke-width="1.5"/>
+      <text x="533" y="442" text-anchor="middle" fill="#ff8c00" font-family="JetBrains Mono,monospace" font-size="8" font-weight="bold">RESPONSE EXECUTES</text>
+      <line x1="608" y1="438" x2="624" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <rect x="626" y="426" width="72" height="24" rx="4" fill="rgba(57,255,20,0.08)" stroke="#39ff14" stroke-width="1"/>
+      <text x="662" y="442" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="8">resolved</text>
+      <line x1="698" y1="438" x2="714" y2="438" stroke="#475569" stroke-width="1" marker-end="url(#as-d)"/>
+      <text x="720" y="442" fill="#475569" font-family="Inter,sans-serif" font-size="7.5" font-style="italic">→ learnings loop back → Detection &amp; Knowledge</text>
+      <text x="110" y="462" fill="#475569" font-family="Inter,sans-serif" font-size="8" font-style="italic">majority auto-closed with evidence · only true threats reach the gate</text>
+
+      <!-- ═══ Grounding arrow ═══ -->
+      <text x="420" y="484" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8" font-style="italic">grounding &amp; retrieval on demand</text>
+      <line x1="350" y1="488" x2="350" y2="498" stroke="#475569" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="500" y1="498" x2="500" y2="488" stroke="#475569" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <!-- ═══════════ KNOWLEDGE LAYER ═══════════ -->
+      <text x="22" y="510" fill="#475569" font-family="Inter,sans-serif" font-size="9">KNOWLEDGE LAYER · RAG grounds every agent in YOUR environment</text>
+      <!-- RAG label -->
+      <text x="790" y="524" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">RAG · the memory</text>
+      <text x="790" y="536" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">retrieves your context on demand</text>
+
+      <rect x="18" y="518" width="145" height="28" rx="5" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="90" y="536" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8">Runbooks &amp; SOPs</text>
+      <rect x="170" y="518" width="155" height="28" rx="5" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="247" y="536" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8">Past incidents &amp; verdicts</text>
+      <rect x="332" y="518" width="145" height="28" rx="5" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="404" y="536" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8">Asset · identity · CMDB</text>
+      <rect x="484" y="518" width="138" height="28" rx="5" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="553" y="536" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8">Threat intel corpus</text>
+      <rect x="629" y="518" width="148" height="28" rx="5" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="703" y="536" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="8">Detections &amp; baselines</text>
+
+      <text x="790" y="552" fill="#475569" font-family="Inter,sans-serif" font-size="7" font-style="italic">optional → platforms like PANW</text>
+      <text x="790" y="562" fill="#475569" font-family="Inter,sans-serif" font-size="7" font-style="italic">run agents + tools without RAG</text>
+
+      <!-- ═══ Bridge text ═══ -->
+      <text x="320" y="572" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="8" font-style="italic">agents reason over knowledge ↑ and act through tools ↓ — every step logged &amp; auditable</text>
+
+      <!-- ═══════════ TOOL LAYER ═══════════ -->
+      <text x="22" y="590" fill="#475569" font-family="Inter,sans-serif" font-size="9">TOOL LAYER · the hands — every action is an API call with an audit trail</text>
+      <!-- TOOLS label -->
+      <text x="790" y="608" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="9" font-weight="bold">TOOLS · the hands</text>
+      <text x="790" y="620" fill="#475569" font-family="Inter,sans-serif" font-size="7.5">queries · tickets · containment</text>
+
+      <rect x="18" y="598" width="100" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="68" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">SIEM query</text>
+      <rect x="124" y="598" width="100" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="174" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">EDR isolate</text>
+      <rect x="230" y="598" width="100" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="280" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">FW / IdP block</text>
+      <rect x="336" y="598" width="100" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="386" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">Ticket &amp; case</text>
+      <rect x="442" y="598" width="100" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="492" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">Email &amp; chat</text>
+      <rect x="548" y="598" width="115" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="605" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">Sandbox detonate</text>
+      <rect x="669" y="598" width="105" height="28" rx="5" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1"/>
+      <text x="721" y="616" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="8">Scanner / EASM</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 21: THANK YOU
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="mono td" style="font-size:0.6em; letter-spacing:5px;">// EOF</p>
+  <div style="height:12px;"></div>
+  <h1 class="tg glow-green" style="font-size:2.8em;">THANK YOU</h1>
+  <div style="height:16px;"></div>
+  <p style="font-size:1.1em; font-weight:600;">Moiz Lakdawala</p>
+  <p class="td" style="font-size:0.78em; margin-top:4px;">BSides Toronto</p>
+  <div style="height:28px;"></div>
+  <h2 class="tg glow-green" style="font-size:1.6em; text-align:center;">Questions?</h2>
+
+</section>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<script>
+// ── tsParticles: animated network background ──
+tsParticles.load("particles-js", {
+  fullScreen: { enable: false },
+  particles: {
+    number: { value: 50, density: { enable: true, area: 1200 } },
+    color: { value: ["#00f0ff", "#39ff14", "#60a5fa"] },
+    shape: { type: "circle" },
+    opacity: { value: { min: 0.1, max: 0.35 }, animation: { enable: true, speed: 0.8, minimumValue: 0.05 } },
+    size: { value: { min: 1, max: 2.5 } },
+    links: {
+      enable: true,
+      distance: 180,
+      color: "#00f0ff",
+      opacity: 0.07,
+      width: 1
+    },
+    move: {
+      enable: true,
+      speed: 0.4,
+      direction: "none",
+      outModes: "bounce"
+    }
+  },
+  interactivity: {
+    events: {
+      onHover: { enable: true, mode: "grab" },
+    },
+    modes: {
+      grab: { distance: 160, links: { opacity: 0.2 } }
+    }
+  },
+  detectRetina: true
+});
+
+// ── Reveal.js ──
+Reveal.initialize({
+  hash: true,
+  controls: true,
+  progress: true,
+  center: true,
+  transition: 'fade',
+  transitionSpeed: 'default',
+  backgroundTransition: 'fade',
+  width: 1280,
+  height: 720,
+  margin: 0.04,
+  slideNumber: 'c/t',
+  plugins: [],
+});
+
+// ── GSAP: animate elements on slide change ──
+Reveal.on('slidechanged', event => {
+  const slide = event.currentSlide;
+
+  // Animate glass cards
+  const cards = slide.querySelectorAll('.glass, .node, .agent');
+  gsap.fromTo(cards,
+    { opacity: 0, y: 20 },
+    { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power2.out" }
+  );
+
+  // Animate terminal blocks
+  const terminals = slide.querySelectorAll('.terminal');
+  gsap.fromTo(terminals,
+    { opacity: 0, x: -20 },
+    { opacity: 1, x: 0, duration: 0.6, delay: 0.3, ease: "power2.out" }
+  );
+
+  // Animate stat numbers
+  const nums = slide.querySelectorAll('.stat-num');
+  gsap.fromTo(nums,
+    { scale: 0.5, opacity: 0 },
+    { scale: 1, opacity: 1, duration: 0.4, stagger: 0.1, delay: 0.2, ease: "back.out(1.7)" }
+  );
+
+  // Animate step numbers
+  const steps = slide.querySelectorAll('.step-num');
+  gsap.fromTo(steps,
+    { scale: 0, rotation: -90 },
+    { scale: 1, rotation: 0, duration: 0.4, stagger: 0.1, ease: "back.out(2)" }
+  );
+
+  // Animate arrows
+  const arrows = slide.querySelectorAll('.arrow');
+  gsap.fromTo(arrows,
+    { opacity: 0, x: -10 },
+    { opacity: 1, x: 0, duration: 0.3, stagger: 0.05, delay: 0.2, ease: "power1.out" }
+  );
+});
+
+// Trigger for first slide
+Reveal.on('ready', event => {
+  const slide = event.currentSlide;
+  const cards = slide.querySelectorAll('.glass, .node, .agent');
+  gsap.fromTo(cards,
+    { opacity: 0, y: 20 },
+    { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }
+  );
+});
+</script>
+</body>
+</html>

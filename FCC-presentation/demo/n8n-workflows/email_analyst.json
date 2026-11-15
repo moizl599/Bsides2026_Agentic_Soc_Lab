@@ -1,0 +1,147 @@
+{
+  "name": "AI Email Analyst",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-analyst",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "agent": "toolsAgent",
+        "promptType": "define",
+        "text": "Analyze the following email for phishing, malware, and social engineering threats. Use ALL of your tools to investigate before delivering your verdict.\n\n={{ $json.body.raw_email }}",
+        "options": {
+          "maxIterations": 10,
+          "returnIntermediateSteps": true,
+          "systemMessage": "You are an AI Email Security Analyst. You investigate emails by calling your tools to gather evidence, then deliver a verdict.\n\nFor each email you MUST:\n1. Call analyze_headers — pass the full email text to parse headers and check SPF/DKIM/DMARC\n2. Call check_domain — check the sender domain reputation\n3. Call check_url — analyze any URL found in the email body\n4. Call query_kb — search for known threat patterns matching this email\n\nAfter calling all tools, deliver your verdict:\n- Risk level: MALICIOUS, SUSPICIOUS, or SAFE\n- Confidence score: 0-100\n- Key evidence from each tool result\n- Recommended actions\n\nAlways call all 4 tools before answering. The email text in the user message IS the email to analyze."
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "maxTokens": 4096
+        }
+      },
+      "id": "openai-llm",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [400, 500]
+    },
+    {
+      "parameters": {
+        "name": "analyze_headers",
+        "description": "Parse email headers and extract security-relevant fields including SPF, DKIM, DMARC authentication results, sender domain, return path, and red flags. Pass the full raw email text.",
+        "jsCode": "const raw_email = $fromAI('raw_email', 'The complete raw email text including all headers and body', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/analyze-headers', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ raw_email })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-headers",
+      "name": "Analyze Headers",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [320, 680]
+    },
+    {
+      "parameters": {
+        "name": "check_domain",
+        "description": "Check a domain's reputation against threat intelligence feeds. Returns risk level, risk score, registration info, and whether it's known malicious.",
+        "jsCode": "const domain = $fromAI('domain', 'The domain name to check, e.g. example.com', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/check-domain', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ domain })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-domain",
+      "name": "Check Domain",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [460, 680]
+    },
+    {
+      "parameters": {
+        "name": "check_url",
+        "description": "Analyze a URL for phishing, malware, and suspicious indicators. Returns risk level, score, and specific indicators found.",
+        "jsCode": "const target_url = $fromAI('target_url', 'The full URL to analyze including the protocol, e.g. https://example.com/path', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/check-url', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ target_url })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-url",
+      "name": "Check URL",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [600, 680]
+    },
+    {
+      "parameters": {
+        "name": "query_kb",
+        "description": "Search the security knowledge base for known attack patterns, indicators, and response procedures. Use this to match the email against known threats.",
+        "jsCode": "const query = $fromAI('query', 'Search query text for the knowledge base', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/query-kb', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ query, collection: 'security_kb' })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-kb",
+      "name": "Query KB",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [740, 680]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}"
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{"node": "AI Agent", "type": "main", "index": 0}]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [{"node": "Respond to Webhook", "type": "main", "index": 0}]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [{"node": "AI Agent", "type": "ai_languageModel", "index": 0}]
+      ]
+    },
+    "Analyze Headers": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    },
+    "Check Domain": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    },
+    "Check URL": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    },
+    "Query KB": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

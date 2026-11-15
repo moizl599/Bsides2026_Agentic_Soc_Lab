@@ -1,0 +1,88 @@
+services:
+  # ── n8n — Workflow Orchestration ──────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: fcc-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - WEBHOOK_URL=http://localhost:5678/
+      - N8N_SECURE_COOKIE=false
+      - GENERIC_TIMEZONE=America/Toronto
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - fcc-demo
+
+  # ── ChromaDB — Vector Knowledge Base ─────────────────────
+  chromadb:
+    image: chromadb/chroma:0.5.23
+    container_name: fcc-chromadb
+    restart: unless-stopped
+    ports:
+      - "8100:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+    networks:
+      - fcc-demo
+
+  # ── MCP Server — Tool Gateway ────────────────────────────
+  mcp-server:
+    build: ./mcp-server
+    container_name: fcc-mcp-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - PROBLEM_SERVER_HOST=problem-server
+      - PROBLEM_SERVER_PORT=9100
+      - MCP_PORT=3001
+    volumes:
+      - ./kb-data:/app/kb-data:ro
+    depends_on:
+      - chromadb
+      - problem-server
+    networks:
+      - fcc-demo
+
+  # ── Problem Server — Real Broken Server ──────────────────
+  problem-server:
+    build: ./problem-server
+    container_name: fcc-problem-server
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    networks:
+      - fcc-demo
+
+  # ── Demo UI — Web Frontend ──────────────────────────────
+  demo-ui:
+    build: ./demo-ui
+    container_name: fcc-demo-ui
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - mcp-server
+      - n8n
+    networks:
+      - fcc-demo
+
+networks:
+  fcc-demo:
+    name: fcc-demo-network
+
+volumes:
+  n8n_data:
+  chroma_data:

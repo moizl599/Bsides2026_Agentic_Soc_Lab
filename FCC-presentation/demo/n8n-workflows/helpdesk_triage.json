@@ -1,0 +1,147 @@
+{
+  "name": "IT Helpdesk Triage Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "helpdesk-triage",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "agent": "toolsAgent",
+        "promptType": "define",
+        "text": "Triage the following helpdesk ticket. Use ALL of your tools to investigate before delivering your triage.\n\nTicket ID: {{ $json.body.ticket_id }}\nSubmitted by: {{ $json.body.username }}\nSubject: {{ $json.body.subject }}\nDescription: {{ $json.body.description }}",
+        "options": {
+          "maxIterations": 10,
+          "returnIntermediateSteps": true,
+          "systemMessage": "You are an AI IT Helpdesk Triage Agent. You investigate tickets by calling your tools to gather evidence from real systems, then deliver a triage.\n\nFor each ticket you MUST:\n1. Call check_service_status — pull real metrics from the mentioned server (use server=fs01.internal and metric=all)\n2. Call lookup_asset — look up the submitting user's devices and VIP status\n3. Call query_kb — search for known solutions related to the issue\n4. Call update_ticket — submit your triage with category, priority, assigned_team, summary, action1, action2\n\nPriority guidelines:\n- Critical: multiple users affected + service outage\n- High: VIP user OR confirmed infrastructure issue\n- Medium: single user, workaround available\n- Low: informational or non-urgent\n\nAssignment teams: Infrastructure Operations, Desktop Support, Security, Network Operations\n\nAfter calling all tools and updating the ticket, summarize your triage findings."
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "maxTokens": 4096
+        }
+      },
+      "id": "openai-llm",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [400, 500]
+    },
+    {
+      "parameters": {
+        "name": "check_service_status",
+        "description": "Pull real-time metrics from a server's monitoring agent. Returns CPU, memory, disk usage, service status, and recent log entries. Use this to verify if there are actual infrastructure issues.",
+        "jsCode": "const server = $fromAI('server', 'Server hostname to check, e.g. fs01.internal', 'string');\nconst metric = $fromAI('metric', 'Metric type: cpu, memory, disk, services, logs, or all', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/check-service-status', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ server, metric })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-svc",
+      "name": "Check Service Status",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [280, 680]
+    },
+    {
+      "parameters": {
+        "name": "lookup_asset",
+        "description": "Look up a user's IT assets, department, VIP status, assigned devices, network drives, and software from the asset management database.",
+        "jsCode": "const username = $fromAI('username', 'The username to look up, e.g. jsmith', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/lookup-asset', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ username })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-asset",
+      "name": "Lookup Asset",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [440, 680]
+    },
+    {
+      "parameters": {
+        "name": "query_kb",
+        "description": "Search the IT helpdesk knowledge base for known issues, solutions, and procedures related to the ticket's problem.",
+        "jsCode": "const query = $fromAI('query', 'Search query text for the knowledge base', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/query-kb', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ query, collection: 'helpdesk_kb' })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-kb",
+      "name": "Query KB",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [600, 680]
+    },
+    {
+      "parameters": {
+        "name": "update_ticket",
+        "description": "Update the helpdesk ticket with triage results including category, priority, assigned team, summary, and recommended actions.",
+        "jsCode": "const ticket_id = $fromAI('ticket_id', 'The ticket ID to update', 'string');\nconst category = $fromAI('category', 'Issue category e.g. Infrastructure - File Services', 'string');\nconst priority = $fromAI('priority', 'Priority level: critical, high, medium, or low', 'string');\nconst assigned_team = $fromAI('assigned_team', 'Team to assign the ticket to', 'string');\nconst summary = $fromAI('summary', 'Brief triage summary with evidence', 'string');\nconst action1 = $fromAI('action1', 'First recommended action', 'string');\nconst action2 = $fromAI('action2', 'Second recommended action', 'string');\n\nconst resp = await fetch('http://mcp-server:3001/api/tools/update-ticket', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ ticket_id, category, priority, assigned_team, summary, action1, action2 })\n});\nreturn await resp.text();"
+      },
+      "id": "tool-ticket",
+      "name": "Update Ticket",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1,
+      "position": [760, 680]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}"
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{"node": "AI Agent", "type": "main", "index": 0}]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [{"node": "Respond to Webhook", "type": "main", "index": 0}]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [{"node": "AI Agent", "type": "ai_languageModel", "index": 0}]
+      ]
+    },
+    "Check Service Status": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    },
+    "Lookup Asset": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    },
+    "Query KB": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    },
+    "Update Ticket": {
+      "ai_tool": [
+        [{"node": "AI Agent", "type": "ai_tool", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

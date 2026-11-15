@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI Demo Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: rgba(17, 24, 39, 0.85);
+  --border: rgba(0, 255, 136, 0.15);
+  --border-active: rgba(0, 255, 136, 0.4);
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-dim: #6b7280;
+  --accent: #00ff88;
+  --accent-dim: rgba(0, 255, 136, 0.1);
+  --accent-glow: rgba(0, 255, 136, 0.3);
+  --danger: #ff4444;
+  --warning: #ffaa00;
+  --safe: #00ff88;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Canvas Background ────────────────────────────────── */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── CRT Scanline Overlay ─────────────────────────────── */
+.crt-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.08) 0px,
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+
+/* ── Main Layout ──────────────────────────────────────── */
+.app {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title .icon {
+  width: 36px; height: 36px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-active);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.header-title h1 {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--accent); }
+  50% { opacity: 0.5; box-shadow: 0 0 12px var(--accent); }
+}
+
+/* ── Tab Navigation ───────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  backdrop-filter: blur(20px);
+}
+
+.tab:hover {
+  border-color: var(--border-active);
+  background: rgba(0, 255, 136, 0.03);
+}
+
+.tab.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+}
+
+.tab-label {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.tab.active .tab-label { color: var(--accent); }
+
+.tab-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ── Demo Panels ──────────────────────────────────────── */
+.demo-panel {
+  display: none;
+  gap: 20px;
+}
+
+.demo-panel.active {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+  .demo-panel.active { grid-template-columns: 1fr; }
+}
+
+/* ── Input Panel ──────────────────────────────────────── */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-header .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.panel-header .dot.red { background: #ff5f56; }
+.panel-header .dot.yellow { background: #ffbd2e; }
+.panel-header .dot.green { background: #27c93f; }
+
+.panel-header h3 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.panel-body {
+  padding: 20px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 220px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+}
+
+textarea::placeholder { color: var(--text-dim); }
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.field input, .field select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.05));
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.btn:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(0, 255, 136, 0.1));
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn.running {
+  animation: btn-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.4); }
+}
+
+/* ── Output / Agent Loop Panel ────────────────────────── */
+.agent-loop {
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.loop-step {
+  margin-bottom: 16px;
+  border-left: 2px solid var(--border);
+  padding-left: 16px;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loop-step .step-phase {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.loop-step.observe { border-color: #3b82f6; }
+.loop-step.observe .step-phase { color: #3b82f6; }
+
+.loop-step.think { border-color: #a855f7; }
+.loop-step.think .step-phase { color: #a855f7; }
+
+.loop-step.act { border-color: #f59e0b; }
+.loop-step.act .step-phase { color: #f59e0b; }
+
+.loop-step.result { border-color: var(--accent); }
+.loop-step.result .step-phase { color: var(--accent); }
+
+.loop-step.error { border-color: var(--danger); }
+.loop-step.error .step-phase { color: var(--danger); }
+
+.step-content {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.step-content code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+.step-content .tool-call {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.step-content .tool-name {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.step-content .tool-result {
+  color: var(--text-secondary);
+  margin-top: 6px;
+  white-space: pre-wrap;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* ── Verdict Card ─────────────────────────────────────── */
+.verdict {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-active);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 12px;
+}
+
+.verdict h4 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.verdict.malicious { border-color: var(--danger); }
+.verdict.malicious h4 { color: var(--danger); }
+
+.verdict.suspicious { border-color: var(--warning); }
+.verdict.suspicious h4 { color: var(--warning); }
+
+.verdict.safe { border-color: var(--safe); }
+.verdict.safe h4 { color: var(--safe); }
+
+/* ── Triage Verdict Card (Helpdesk) ──────────────────── */
+.verdict.triage-critical { border-color: var(--danger); }
+.verdict.triage-critical h4 { color: var(--danger); }
+.verdict.triage-critical .triage-badge {
+  background: rgba(255, 68, 68, 0.15); color: var(--danger); border-color: var(--danger);
+}
+
+.verdict.triage-high { border-color: #ff6b35; }
+.verdict.triage-high h4 { color: #ff6b35; }
+.verdict.triage-high .triage-badge {
+  background: rgba(255, 107, 53, 0.15); color: #ff6b35; border-color: #ff6b35;
+}
+
+.verdict.triage-medium { border-color: var(--warning); }
+.verdict.triage-medium h4 { color: var(--warning); }
+.verdict.triage-medium .triage-badge {
+  background: rgba(255, 170, 0, 0.15); color: var(--warning); border-color: var(--warning);
+}
+
+.verdict.triage-low { border-color: var(--safe); }
+.verdict.triage-low h4 { color: var(--safe); }
+.verdict.triage-low .triage-badge {
+  background: rgba(0, 255, 136, 0.15); color: var(--safe); border-color: var(--safe);
+}
+
+.triage-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.triage-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 6px 16px;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.triage-grid .triage-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-top: 2px;
+}
+
+.triage-grid .triage-value {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.triage-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.triage-actions h5 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.triage-actions li {
+  list-style: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 3px 0 3px 16px;
+  position: relative;
+}
+
+.triage-actions li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.verdict-detail {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ── Loading Spinner ──────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Sample data buttons ──────────────────────────────── */
+.samples {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.sample-btn {
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sample-btn:hover {
+  border-color: var(--border-active);
+  color: var(--text-secondary);
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="crt-overlay"></div>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <div class="icon">&#x1F916;</div>
+      <h1>AGENTIC AI DEMO</h1>
+    </div>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      <span>SYSTEM ONLINE</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('email')" id="tab-email">
+      <div class="tab-label">Demo A: Email Analyst</div>
+      <div class="tab-desc">Paste a phishing email &rarr; watch the agent investigate</div>
+    </div>
+    <div class="tab" onclick="switchTab('helpdesk')" id="tab-helpdesk">
+      <div class="tab-label">Demo E: Helpdesk Triage</div>
+      <div class="tab-desc">Submit a ticket &rarr; watch the agent triage</div>
+    </div>
+  </div>
+
+  <!-- Demo A: Email Analyst -->
+  <div class="demo-panel active" id="panel-email">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <h3>email-input.eml</h3>
+      </div>
+      <div class="panel-body">
+        <textarea id="email-input" placeholder="Paste the full email (headers + body) here..."></textarea>
+        <div class="samples">
+          <button class="sample-btn" onclick="loadSample('phishing')">Load: Phishing Email</button>
+          <button class="sample-btn" onclick="loadSample('legitimate')">Load: Legitimate Email</button>
+        </div>
+        <button class="btn" id="btn-email" onclick="runEmailAnalysis()">
+          &#x25B6; ANALYZE EMAIL
+        </button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <h3>agent-loop.log</h3>
+      </div>
+      <div class="agent-loop" id="email-output">
+        <div class="loop-step observe">
+          <div class="step-phase">Ready</div>
+          <div class="step-content">Paste an email and click Analyze to start the agentic loop.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo E: Helpdesk Triage -->
+  <div class="demo-panel" id="panel-helpdesk">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <h3>ticket-submit.form</h3>
+      </div>
+      <div class="panel-body">
+        <div class="input-row">
+          <div class="field">
+            <label>Submitted By</label>
+            <input type="text" id="ticket-user" value="jsmith" placeholder="username">
+          </div>
+          <div class="field">
+            <label>Ticket ID</label>
+            <input type="text" id="ticket-id" value="INC-2024-4471" readonly>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Subject</label>
+          <input type="text" id="ticket-subject" value="Cannot access shared drive — files not loading" placeholder="Brief description">
+        </div>
+        <textarea id="ticket-body" placeholder="Describe the issue in detail..." style="min-height:140px">I've been trying to access the finance shared drive (\\fs01.internal\finance-shared) since this morning but it keeps timing out. I need to pull the Q3 reports for the board meeting at 2pm. Other people on my team are having the same issue. The mapped drive shows as disconnected and when I try to browse to it manually I get "The network path was not found." This has been happening on and off for the past few days but today it's completely down.</textarea>
+        <button class="btn" id="btn-helpdesk" onclick="runHelpdeskTriage()">
+          &#x25B6; TRIAGE TICKET
+        </button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <h3>agent-loop.log</h3>
+      </div>
+      <div class="agent-loop" id="helpdesk-output">
+        <div class="loop-step observe">
+          <div class="step-phase">Ready</div>
+          <div class="step-content">Fill in a ticket and click Triage to start the agentic loop.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  Config
+// ═══════════════════════════════════════════════════════════════
+const MCP_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001'
+  : `http://${window.location.hostname}:3001`;
+
+// ═══════════════════════════════════════════════════════════════
+//  Particle Background (inspired by Constellation Field)
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+const PARTICLE_COUNT = 80;
+const CONNECTION_DIST = 150;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function createParticles() {
+  particles = [];
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 2 + 1,
+      alpha: Math.random() * 0.5 + 0.2,
+    });
+  }
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < CONNECTION_DIST) {
+        const alpha = (1 - dist / CONNECTION_DIST) * 0.15;
+        ctx.strokeStyle = `rgba(0, 255, 136, ${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Draw particles
+  for (const p of particles) {
+    ctx.fillStyle = `rgba(0, 255, 136, ${p.alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Glow
+    ctx.fillStyle = `rgba(0, 255, 136, ${p.alpha * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Update position
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+  }
+
+  requestAnimationFrame(drawParticles);
+}
+
+resizeCanvas();
+createParticles();
+drawParticles();
+window.addEventListener('resize', () => { resizeCanvas(); createParticles(); });
+
+// ═══════════════════════════════════════════════════════════════
+//  Tab Switching
+// ═══════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Sample Data
+// ═══════════════════════════════════════════════════════════════
+const SAMPLES = {
+  phishing: `From: "Microsoft Security Team" <security@secure-microsft-verify.xyz>
+Reply-To: verify-account@secure-microsft-verify.xyz
+To: jsmith@company.com
+Subject: URGENT: Your account has been compromised - Verify Now
+Date: Thu, 14 Nov 2026 08:23:41 -0500
+Message-ID: <a3f8b2c1-9d4e-4a7b-b5c6-8e1f2d3a4b5c@secure-microsft-verify.xyz>
+X-Mailer: PHPMailer 6.5.0
+MIME-Version: 1.0
+Content-Type: text/html; charset=UTF-8
+Authentication-Results: mx.company.com;
+    spf=fail (sender IP is 185.234.72.91) smtp.mailfrom=secure-microsft-verify.xyz;
+    dkim=fail header.d=secure-microsft-verify.xyz;
+    dmarc=fail action=none header.from=secure-microsft-verify.xyz
+Received: from mail-out.suspicious-host.ru (185.234.72.91) by mx.company.com
+
+Dear Valued Customer,
+
+We have detected unusual sign-in activity on your Microsoft 365 account. Your account may have been compromised.
+
+To protect your account, please verify your identity immediately by clicking the link below:
+
+https://secure-microsft-verify.xyz/login/verify-account?user=jsmith&token=a8f3b2c1
+
+If you do not verify within 24 hours, your account will be permanently suspended.
+
+Thank you,
+Microsoft Account Security Team`,
+
+  legitimate: `From: "IT Support" <it-support@company.com>
+To: jsmith@company.com
+Subject: Scheduled maintenance this weekend
+Date: Thu, 14 Nov 2026 10:15:00 -0500
+Message-ID: <msg-20261114-001@company.com>
+X-Mailer: Microsoft Outlook 16.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Authentication-Results: mx.company.com;
+    spf=pass smtp.mailfrom=company.com;
+    dkim=pass header.d=company.com;
+    dmarc=pass header.from=company.com
+Received: from mail.company.com (10.0.1.25) by mx.company.com
+
+Hi John,
+
+Just a reminder that we'll be performing scheduled maintenance on the VPN gateway this Saturday from 2am to 6am EST.
+
+During this window, remote access will be unavailable. If you need to work remotely, please plan accordingly.
+
+Thanks,
+IT Support Team`
+};
+
+function loadSample(type) {
+  document.getElementById('email-input').value = SAMPLES[type];
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Agent Loop Display
+// ═══════════════════════════════════════════════════════════════
+function addStep(containerId, phase, content) {
+  const container = document.getElementById(containerId);
+  const step = document.createElement('div');
+  step.className = `loop-step ${phase}`;
+  step.innerHTML = `
+    <div class="step-phase">${phase === 'observe' ? '👁 Observe' : phase === 'think' ? '🧠 Think' : phase === 'act' ? '🔧 Act' : phase === 'result' ? '✅ Result' : '❌ Error'}</div>
+    <div class="step-content">${content}</div>
+  `;
+  container.appendChild(step);
+  container.scrollTop = container.scrollHeight;
+  return step;
+}
+
+function addToolStep(containerId, toolName, input, result) {
+  const container = document.getElementById(containerId);
+  const step = document.createElement('div');
+  step.className = 'loop-step act';
+
+  let resultStr = typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result);
+  if (resultStr.length > 500) resultStr = resultStr.substring(0, 500) + '\n...';
+
+  step.innerHTML = `
+    <div class="step-phase">🔧 Act</div>
+    <div class="step-content">
+      <div class="tool-call">
+        <div><span class="tool-name">${toolName}</span>(${typeof input === 'object' ? JSON.stringify(input) : input})</div>
+        <div class="tool-result">${resultStr}</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(step);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addVerdict(containerId, level, details) {
+  const container = document.getElementById(containerId);
+  const step = document.createElement('div');
+  step.className = 'loop-step result';
+  step.innerHTML = `
+    <div class="step-phase">✅ Verdict</div>
+    <div class="step-content">
+      <div class="verdict ${level}">
+        <h4>${level === 'malicious' ? '🚨 MALICIOUS' : level === 'suspicious' ? '⚠️ SUSPICIOUS' : '✅ SAFE'}</h4>
+        <div class="verdict-detail">${details}</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(step);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addTriageVerdict(containerId, ticketId, priority, category, team, sla, summary, actions) {
+  const container = document.getElementById(containerId);
+  const step = document.createElement('div');
+  step.className = 'loop-step result';
+  const priorityIcons = { critical: '🔴', high: '🟠', medium: '🟡', low: '🟢' };
+  step.innerHTML = `
+    <div class="step-phase">✅ Triage Complete</div>
+    <div class="step-content">
+      <div class="verdict triage-${priority}">
+        <h4>${priorityIcons[priority] || '🟡'} TICKET ${ticketId} <span class="triage-badge">${priority.toUpperCase()}</span></h4>
+        <div class="triage-grid">
+          <span class="triage-label">Category</span>
+          <span class="triage-value">${category}</span>
+          <span class="triage-label">Assigned To</span>
+          <span class="triage-value">${team}</span>
+          <span class="triage-label">SLA Target</span>
+          <span class="triage-value">${sla}</span>
+          <span class="triage-label">Summary</span>
+          <span class="triage-value">${summary}</span>
+        </div>
+        <div class="triage-actions">
+          <h5>Recommended Actions</h5>
+          <ul>${actions.map(a => `<li>${a}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+  `;
+  container.appendChild(step);
+  container.scrollTop = container.scrollHeight;
+}
+
+function clearOutput(containerId) {
+  document.getElementById(containerId).innerHTML = '';
+}
+
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ═══════════════════════════════════════════════════════════════
+//  Demo A: Email Analysis (direct tool calls for demo)
+// ═══════════════════════════════════════════════════════════════
+async function runEmailAnalysis() {
+  const btn = document.getElementById('btn-email');
+  const rawEmail = document.getElementById('email-input').value.trim();
+  if (!rawEmail) return;
+
+  btn.disabled = true;
+  btn.classList.add('running');
+  btn.innerHTML = '<span class="spinner"></span> AGENT RUNNING...';
+  clearOutput('email-output');
+
+  const out = 'email-output';
+
+  try {
+    // Step 1: Observe
+    addStep(out, 'observe', 'New email received for analysis. Reading the raw email content...');
+    await sleep(800);
+
+    // Step 2: Think
+    addStep(out, 'think', 'I need to investigate this email for potential threats. My plan:<br>1. Analyze the email headers for authentication and red flags<br>2. Check the sender domain reputation<br>3. Check any URLs in the body<br>4. Query the knowledge base for known patterns<br>5. Deliver a verdict');
+    await sleep(1000);
+
+    // Step 3: Act — Analyze Headers
+    addStep(out, 'act', '<span class="spinner"></span> Calling <code>analyze-headers</code>...');
+    await sleep(500);
+    const headerResp = await fetch(`${MCP_BASE}/api/tools/analyze-headers`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({raw_email: rawEmail})
+    });
+    const headers = await headerResp.json();
+    addToolStep(out, 'analyze-headers', '{raw_email: "..."}', headers);
+    await sleep(600);
+
+    // Step 4: Think about headers
+    const redFlags = Object.entries(headers.red_flags || {}).filter(([k,v]) => v).map(([k]) => k.replace(/_/g, ' '));
+    addStep(out, 'think', `Header analysis complete. ${redFlags.length > 0 ? `Red flags found: <code>${redFlags.join('</code>, <code>')}</code>. ` : 'No red flags in headers. '}SPF: <code>${headers.authentication?.spf}</code>, DKIM: <code>${headers.authentication?.dkim}</code>, DMARC: <code>${headers.authentication?.dmarc}</code>. I need to check the sender domain reputation next.`);
+    await sleep(800);
+
+    // Step 5: Act — Check Domain
+    const domain = headers.sender_domain || 'unknown';
+    addStep(out, 'act', `<span class="spinner"></span> Calling <code>check-domain</code> for <code>${domain}</code>...`);
+    await sleep(500);
+    const domainResp = await fetch(`${MCP_BASE}/api/tools/check-domain`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({domain})
+    });
+    const domainResult = await domainResp.json();
+    addToolStep(out, 'check-domain', `{domain: "${domain}"}`, domainResult);
+    await sleep(600);
+
+    // Step 6: Think about domain
+    addStep(out, 'think', `Domain <code>${domain}</code> has risk level: <code>${domainResult.risk_level}</code> (score: ${domainResult.risk_score}/100). ${domainResult.known_malicious ? 'This domain is KNOWN MALICIOUS in threat feeds.' : ''} Let me check any URLs in the email body.`);
+    await sleep(800);
+
+    // Step 7: Act — Check URLs
+    const urlMatch = rawEmail.match(/https?:\/\/[^\s<>"]+/g);
+    let urlResult = null;
+    if (urlMatch && urlMatch.length > 0) {
+      const targetUrl = urlMatch[0];
+      addStep(out, 'act', `<span class="spinner"></span> Calling <code>check-url</code> for <code>${targetUrl.substring(0, 50)}...</code>`);
+      await sleep(500);
+      const urlResp = await fetch(`${MCP_BASE}/api/tools/check-url`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url: targetUrl})
+      });
+      urlResult = await urlResp.json();
+      addToolStep(out, 'check-url', `{url: "${targetUrl.substring(0, 50)}..."}`, urlResult);
+      await sleep(600);
+    } else {
+      addStep(out, 'think', 'No URLs found in email body. Proceeding to knowledge base query.');
+      await sleep(500);
+    }
+
+    // Step 8: Act — Query KB
+    addStep(out, 'act', '<span class="spinner"></span> Calling <code>query-kb</code>...');
+    await sleep(500);
+    let kbResult;
+    try {
+      const kbResp = await fetch(`${MCP_BASE}/api/tools/query-kb`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: `phishing email ${domain} credential harvesting`, collection: 'security_kb'})
+      });
+      kbResult = await kbResp.json();
+      addToolStep(out, 'query-kb', `{query: "phishing email ${domain}..."}`, kbResult);
+    } catch (e) {
+      addStep(out, 'think', 'Knowledge base not available — proceeding with evidence gathered so far.');
+    }
+    await sleep(800);
+
+    // Step 9: Final Think + Verdict
+    const authFail = headers.authentication?.spf === 'fail' || headers.authentication?.dkim === 'fail';
+    const domainBad = domainResult.risk_score > 60;
+    const urlBad = urlResult && urlResult.risk_score > 60;
+    const hasRedFlags = redFlags.length > 0;
+
+    let level, detail;
+    if (authFail && domainBad) {
+      level = 'malicious';
+      detail = `<strong>Confirmed phishing email.</strong><br><br>
+        <strong>Evidence:</strong><br>
+        &bull; Authentication failures: SPF=${headers.authentication?.spf}, DKIM=${headers.authentication?.dkim}, DMARC=${headers.authentication?.dmarc}<br>
+        &bull; Sender domain <code>${domain}</code> rated <strong>${domainResult.risk_level}</strong> (score: ${domainResult.risk_score}/100)${domainResult.known_malicious ? ' — known malicious in threat feeds' : ''}<br>
+        ${urlResult ? `&bull; URL rated <strong>${urlResult.risk_level}</strong> with indicators: ${urlResult.indicators?.join(', ') || 'none'}<br>` : ''}
+        ${hasRedFlags ? `&bull; Red flags: ${redFlags.join(', ')}<br>` : ''}
+        <br><strong>Recommended Actions:</strong><br>
+        &bull; Block sender domain at email gateway<br>
+        &bull; Delete email from all mailboxes<br>
+        &bull; Alert any users who may have clicked the link<br>
+        &bull; Check web proxy logs for visits to ${domain}`;
+    } else if (domainBad || urlBad || hasRedFlags) {
+      level = 'suspicious';
+      detail = `<strong>Suspicious email — requires human review.</strong><br><br>
+        <strong>Evidence:</strong><br>
+        &bull; Authentication: SPF=${headers.authentication?.spf}, DKIM=${headers.authentication?.dkim}<br>
+        &bull; Domain risk: ${domainResult.risk_level} (${domainResult.risk_score}/100)<br>
+        ${hasRedFlags ? `&bull; Flags: ${redFlags.join(', ')}<br>` : ''}
+        <br><strong>Recommendation:</strong> Quarantine and escalate to security team for manual review.`;
+    } else {
+      level = 'safe';
+      detail = `<strong>Email appears legitimate.</strong><br><br>
+        <strong>Evidence:</strong><br>
+        &bull; Authentication passed: SPF=${headers.authentication?.spf}, DKIM=${headers.authentication?.dkim}, DMARC=${headers.authentication?.dmarc}<br>
+        &bull; Domain <code>${domain}</code> rated ${domainResult.risk_level} (${domainResult.risk_score}/100)<br>
+        &bull; No red flags detected<br>
+        <br><strong>Recommendation:</strong> No action required. Email is safe.`;
+    }
+
+    addStep(out, 'think', 'All tools consulted. Compiling evidence for final verdict...');
+    await sleep(600);
+    addVerdict(out, level, detail);
+
+  } catch (err) {
+    addStep(out, 'error', `Agent error: ${err.message}. Is the MCP server running at <code>${MCP_BASE}</code>?`);
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('running');
+  btn.innerHTML = '&#x25B6; ANALYZE EMAIL';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Demo E: Helpdesk Triage (direct tool calls for demo)
+// ═══════════════════════════════════════════════════════════════
+//  Demo B: Helpdesk Triage (direct tool calls)
+// ═══════════════════════════════════════════════════════════════
+async function runHelpdeskTriage() {
+  const btn = document.getElementById('btn-helpdesk');
+  const user = document.getElementById('ticket-user').value.trim();
+  const ticketId = document.getElementById('ticket-id').value.trim();
+  const subject = document.getElementById('ticket-subject').value.trim();
+  const body = document.getElementById('ticket-body').value.trim();
+  if (!body) return;
+
+  btn.disabled = true;
+  btn.classList.add('running');
+  btn.innerHTML = '<span class="spinner"></span> AGENT RUNNING...';
+  clearOutput('helpdesk-output');
+
+  const out = 'helpdesk-output';
+
+  try {
+    // Step 1: Observe
+    addStep(out, 'observe', `New ticket <code>${ticketId}</code> from <code>${user}</code>: "${subject}"`);
+    await sleep(800);
+
+    // Step 2: Think
+    addStep(out, 'think', 'I need to triage this helpdesk ticket. My plan:<br>1. Check the mentioned server/service status for real-time data<br>2. Look up the user\'s assets to understand their environment<br>3. Search the knowledge base for known issues and solutions<br>4. Categorize, prioritize, and route the ticket');
+    await sleep(1000);
+
+    // Step 3: Act — Check Service Status
+    addStep(out, 'act', '<span class="spinner"></span> Calling <code>check-service-status</code> for <code>fs01.internal</code>...');
+    await sleep(500);
+    const svcResp = await fetch(`${MCP_BASE}/api/tools/check-service-status`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({server: 'fs01.internal', metric: 'all'})
+    });
+    const svcResult = await svcResp.json();
+    addToolStep(out, 'check-service-status', '{server: "fs01.internal"}', svcResult);
+    await sleep(600);
+
+    // Step 4: Think about server status
+    const issues = svcResult.issues_detected || [];
+    addStep(out, 'think', `Server <code>fs01.internal</code> status: <strong>${svcResult.status}</strong>. ${issues.length > 0 ? `Issues found: <code>${issues.join('</code>, <code>')}</code>. ` : 'No issues detected. '}This confirms the user\'s report. Let me look up their assets next.`);
+    await sleep(800);
+
+    // Step 5: Act — Lookup Asset
+    addStep(out, 'act', `<span class="spinner"></span> Calling <code>lookup-asset</code> for <code>${user}</code>...`);
+    await sleep(500);
+    const assetResp = await fetch(`${MCP_BASE}/api/tools/lookup-asset`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: user})
+    });
+    const assetResult = await assetResp.json();
+    addToolStep(out, 'lookup-asset', `{username: "${user}"}`, assetResult);
+    await sleep(600);
+
+    // Step 6: Think about assets
+    if (assetResult.found) {
+      const u = assetResult.user;
+      addStep(out, 'think', `User <code>${user}</code> (${u.full_name}) is in <strong>${u.department}</strong>, uses network drives: <code>${(u.network_drives || []).join('</code>, <code>')}</code>. ${u.vip ? '<strong>⚠️ VIP user — escalate priority.</strong> ' : ''}Let me search the KB for known solutions.`);
+    } else {
+      addStep(out, 'think', `User <code>${user}</code> not found in asset database. Proceeding with KB search.`);
+    }
+    await sleep(800);
+
+    // Step 7: Act — Query KB
+    addStep(out, 'act', '<span class="spinner"></span> Calling <code>query-kb</code>...');
+    await sleep(500);
+    let kbResult;
+    try {
+      const kbResp = await fetch(`${MCP_BASE}/api/tools/query-kb`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: `file share network drive access issue SMB ${subject}`, collection: 'helpdesk_kb'})
+      });
+      kbResult = await kbResp.json();
+      addToolStep(out, 'query-kb', '{query: "file share network drive..."}', kbResult);
+    } catch (e) {
+      addStep(out, 'think', 'Knowledge base not available — triaging with evidence gathered.');
+    }
+    await sleep(800);
+
+    // Step 8: Think + Build Triage
+    const isVip = assetResult.found && assetResult.user?.vip;
+    const hasCriticalIssues = svcResult.status === 'critical' || svcResult.status === 'degraded';
+    const priority = isVip || hasCriticalIssues ? 'high' : 'medium';
+
+    addStep(out, 'think', `Evidence gathered. Building triage:<br>&bull; Server has confirmed issues → infrastructure problem, not user error<br>&bull; Multiple users affected (per ticket: "other people on my team")<br>&bull; Priority: <strong>${priority}</strong> ${isVip ? '(VIP user)' : ''} ${hasCriticalIssues ? '(server degraded/critical)' : ''}<br>&bull; Category: Infrastructure / File Services`);
+    await sleep(800);
+
+    // Step 9: Act — Update Ticket
+    const triage = {
+      category: 'Infrastructure — File Services',
+      priority: priority,
+      assigned_team: 'Infrastructure Operations',
+      summary: `File share service on fs01.internal is experiencing intermittent failures. Server monitoring confirms: ${issues.join('; ')}. Multiple users in ${assetResult.found ? assetResult.user.department : 'unknown department'} affected. Root cause appears to be a crashed SMB file-share process and a runaway backup-indexer consuming excessive CPU.`,
+      recommended_actions: [
+        'Restart the smb-fileshare service on fs01.internal',
+        'Kill the stuck backup-indexer process consuming high CPU',
+        'Verify file share accessibility after restart',
+        'Investigate why backup-indexer did not complete on schedule',
+        'Monitor for recurrence — file-share has crashed multiple times recently'
+      ]
+    };
+
+    addStep(out, 'act', `<span class="spinner"></span> Calling <code>update-ticket</code> for <code>${ticketId}</code>...`);
+    await sleep(500);
+    const ticketResp = await fetch(`${MCP_BASE}/api/tools/update-ticket`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ticket_id: ticketId, triage})
+    });
+    const ticketResult = await ticketResp.json();
+    addToolStep(out, 'update-ticket', `{ticket_id: "${ticketId}"}`, ticketResult);
+    await sleep(600);
+
+    // Final triage verdict
+    addTriageVerdict(out, ticketId, priority, triage.category,
+      triage.assigned_team, ticketResult.sla_target || '4 hours',
+      triage.summary, triage.recommended_actions);
+
+  } catch (err) {
+    addStep(out, 'error', `Agent error: ${err.message}. Is the MCP server running at <code>${MCP_BASE}</code>?`);
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('running');
+  btn.innerHTML = '&#x25B6; TRIAGE TICKET';
+}
+</script>
+</body>
+</html>

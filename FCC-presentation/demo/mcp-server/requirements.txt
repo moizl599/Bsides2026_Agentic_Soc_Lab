@@ -1,0 +1,5 @@
+flask==3.1.0
+flask-cors==5.0.1
+requests==2.32.3
+chromadb==0.5.23
+gunicorn==23.0.0

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Beyond the Buzzword — FCC Network Systems Cyber Security Forum</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   THEME TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  --bg: #060a13;
+  --bg-card: rgba(15, 23, 42, 0.6);
+  --bg-glass: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(100, 120, 160, 0.25);
+  --glass-blur: 16px;
+  --cyan: #00f0ff;
+  --green: #39ff14;
+  --orange: #ff8c00;
+  --red: #ff4757;
+  --purple: #a78bfa;
+  --yellow: #fbbf24;
+  --blue: #60a5fa;
+  --pink: #f472b6;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #475569;
+  --glow-cyan: 0 0 20px rgba(0,240,255,0.3), 0 0 60px rgba(0,240,255,0.1);
+  --glow-green: 0 0 20px rgba(57,255,20,0.3), 0 0 60px rgba(57,255,20,0.1);
+  --glow-orange: 0 0 20px rgba(255,140,0,0.3), 0 0 60px rgba(255,140,0,0.1);
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════ */
+html, body { background: #060a13 !important; margin: 0; padding: 0; }
+.reveal { font-family: 'Inter', sans-serif; color: var(--text); background: #060a13 !important; }
+.reveal .slide-background { background: #060a13 !important; }
+.reveal .slides { text-align: left; }
+.reveal .slides section { padding: 48px 64px; box-sizing: border-box; background: transparent !important; }
+
+/* particles behind everything */
+#particles-js {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  z-index: 0;
+}
+.reveal { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════ */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: left;
+  margin: 0 0 4px 0;
+}
+.reveal h1 { font-size: 2.8em; line-height: 1.0; }
+.reveal h2 { font-size: 1.6em; margin-bottom: 8px; }
+.reveal h3 { font-size: 1.05em; text-shadow: none; }
+.reveal p { font-size: 0.9em; line-height: 1.5; margin: 0; }
+.reveal li { font-size: 0.88em; line-height: 1.4; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* color utilities */
+.tc { color: var(--cyan); }
+.tg { color: var(--green); }
+.to { color: var(--orange); }
+.tr { color: var(--red); }
+.tp { color: var(--purple); }
+.ty { color: var(--yellow); }
+.tb { color: var(--blue); }
+.td { color: var(--text-dim); }
+.tm { color: var(--text-muted); }
+.b { font-weight: 700; }
+
+/* ═══════════════════════════════════════════
+   GLASSMORPHISM CARDS
+   ═══════════════════════════════════════════ */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+.glass:hover { border-color: rgba(100,120,160,0.3); }
+.glass-sm { border-radius: 12px; padding: 16px; }
+.glass-tight { border-radius: 10px; padding: 12px 16px; }
+
+/* colored accent borders */
+.border-cyan   { border-color: rgba(0,240,255,0.35); box-shadow: inset 0 0 30px rgba(0,240,255,0.03); }
+.border-green  { border-color: rgba(57,255,20,0.35); box-shadow: inset 0 0 30px rgba(57,255,20,0.03); }
+.border-orange { border-color: rgba(255,140,0,0.35); box-shadow: inset 0 0 30px rgba(255,140,0,0.03); }
+.border-blue   { border-color: rgba(96,165,250,0.35); box-shadow: inset 0 0 30px rgba(96,165,250,0.03); }
+.border-purple { border-color: rgba(167,139,250,0.35); box-shadow: inset 0 0 30px rgba(167,139,250,0.03); }
+.border-red    { border-color: rgba(255,71,87,0.35); box-shadow: inset 0 0 30px rgba(255,71,87,0.03); }
+.border-yellow { border-color: rgba(251,191,36,0.35); box-shadow: inset 0 0 30px rgba(251,191,36,0.03); }
+
+/* ═══════════════════════════════════════════
+   TERMINAL BLOCK
+   ═══════════════════════════════════════════ */
+.terminal {
+  background: rgba(6,10,19,0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(57,255,20,0.2);
+  border-radius: 12px;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68em;
+  line-height: 1.7;
+  position: relative;
+  overflow: hidden;
+}
+.terminal::before {
+  content: '●  ●  ●';
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.55em;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(57,255,20,0.1);
+}
+.terminal .p { color: var(--green); }
+.terminal .c { color: var(--text-dim); }
+.terminal .h { color: var(--cyan); font-weight: 700; }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════ */
+.row { display: flex; gap: 16px; align-items: stretch; }
+.col { flex: 1; min-width: 0; }
+.stack { display: flex; flex-direction: column; }
+.center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.center h1, .center h2, .center h3, .center p { text-align: center; }
+.gap-xs { gap: 6px; }
+.gap-sm { gap: 10px; }
+.gap-md { gap: 16px; }
+.gap-lg { gap: 24px; }
+
+/* ═══════════════════════════════════════════
+   DIAGRAM COMPONENTS
+   ═══════════════════════════════════════════ */
+.node {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 2px solid;
+  border-radius: 14px;
+  padding: 14px 20px;
+  text-align: center;
+  position: relative;
+}
+.node h3 { margin: 0; font-size: 0.88em; text-shadow: none; }
+.node p { font-size: 0.6em; color: var(--text-muted); margin-top: 4px; }
+.node-hero {
+  padding: 20px 28px;
+  box-shadow: 0 0 40px rgba(0,240,255,0.1);
+}
+
+/* stat callout */
+.stat-card { text-align: center; padding: 24px 16px; }
+.stat-num { font-family: 'JetBrains Mono', monospace; font-size: 2.6em; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 0.62em; color: var(--text-muted); margin-top: 8px; }
+
+/* step number */
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800; font-size: 0.78em; flex-shrink: 0;
+}
+
+/* arrows */
+.arrow { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; font-size: 1.2em; padding: 0 4px; }
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.pulse { animation: pulse-glow 2.5s ease-in-out infinite; }
+.float { animation: float 3s ease-in-out infinite; }
+.blink { animation: blink 1s step-end infinite; }
+
+.glow-cyan  { text-shadow: var(--glow-cyan); }
+.glow-green { text-shadow: var(--glow-green); }
+.glow-orange { text-shadow: var(--glow-orange); }
+
+/* ═══════════════════════════════════════════
+   REVEAL OVERRIDES
+   ═══════════════════════════════════════════ */
+.reveal .progress { color: var(--cyan); height: 3px; }
+.reveal .controls { color: var(--cyan); }
+.reveal .slide-number { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* ═══════════════════════════════════════════
+   CHATBOT vs AGENT animation
+   ═══════════════════════════════════════════ */
+.chatbot-flow, .agent-flow {
+  position: relative;
+}
+.flow-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 0.62em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.flow-arrow {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.7em;
+  margin: 2px 0;
+}
+
+/* ═══════════════════════════════════════════
+   DEMO ARCHITECTURE DIAGRAM
+   ═══════════════════════════════════════════ */
+.arch-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.arch-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+.arch-node {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 12px 18px;
+  text-align: center;
+  min-width: 120px;
+}
+.arch-node h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 0.72em;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+.arch-node p {
+  font-size: 0.5em;
+  color: var(--text-muted);
+  margin: 0;
+}
+.arch-arrow {
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1em;
+}
+</style>
+</head>
+<body>
+
+<div id="particles-js"></div>
+
+<div class="reveal" style="background:#060a13;">
+<div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 1: TITLE
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="mono td" style="font-size:0.55em; letter-spacing:5px; margin-bottom:24px;">// FCC NETWORK SYSTEMS CYBER SECURITY FORUM</p>
+  <h1 class="tc glow-cyan" style="font-size:2.6em;">BEYOND THE</h1>
+  <h1 class="tg glow-green" style="font-size:2.6em; margin-top:0;">BUZZWORD</h1>
+  <p class="tm" style="font-size:1.05em; font-style:italic; margin-top:20px;">What Agentic AI Actually Looks Like</p>
+  <div style="height:50px;"></div>
+  <p style="font-size:1.05em; font-weight:600;">Moiz Lakdawala</p>
+  <p class="tc mono" style="font-size:0.6em; letter-spacing:2px; margin-top:6px;">Session 1 · November 15, 2026</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 2: WHO AM I — ported exactly from BSides
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <div style="display:flex; align-items:center; justify-content:center; gap:50px; flex-wrap:wrap;">
+
+    <!-- Photo -->
+    <div style="flex-shrink:0;">
+      <img src="img/moiz-cat.png" alt="Moiz Lakdawala"
+           style="width:240px; height:240px; object-fit:cover; border-radius:50%;
+                  border:3px solid var(--cyan); box-shadow:0 0 30px rgba(0,240,255,0.25);">
+    </div>
+
+    <!-- Info -->
+    <div style="text-align:left; max-width:520px;">
+      <p class="mono td" style="font-size:0.55em; letter-spacing:4px; margin-bottom:6px;">// WHOAMI</p>
+      <h2 class="tc glow-cyan" style="font-size:1.8em; margin:0;">Moiz Lakdawala</h2>
+      <p class="tm" style="font-size:0.75em; margin-top:6px;">7+ yrs in the SOC trenches</p>
+
+      <!-- Role progression — all appear on one click -->
+      <div class="fragment fade-right" style="margin-top:14px; display:flex; flex-direction:column; gap:3px; font-size:0.7em; font-family:'JetBrains Mono',monospace;">
+        <p style="margin:0; color:rgba(148,163,184,0.6);">SOC Analyst</p>
+        <p style="margin:0; color:rgba(148,163,184,0.7);">Sr. SOC Analyst</p>
+        <p style="margin:0; color:rgba(148,163,184,0.8);">Security &amp; Automation Engineer</p>
+        <p style="margin:0; color:rgba(148,163,184,0.85);">SOC Lead</p>
+        <p style="margin:0; color:rgba(148,163,184,0.9);">Technical Account Manager</p>
+        <p style="margin:0; color:rgba(203,213,225,0.95);">Director of Security Operations</p>
+        <p class="b" style="margin:0; color:var(--green); text-shadow:0 0 8px rgba(57,255,20,0.3);">&#9658; Principal Consultant, SOC Advisory</p>
+      </div>
+
+      <div style="margin-top:18px; display:flex; gap:20px; font-size:0.65em; flex-wrap:wrap;">
+        <span><span class="tg b mono">MEDIUM</span> <span class="td">@moizl599</span></span>
+        <span><span class="tb b mono">LINKEDIN</span> <span class="td">/abdulmoiz-lakdawala</span></span>
+        <span><span class="tp b mono">GITHUB</span> <span class="td">/moizl599</span></span>
+      </div>
+
+      <p class="fragment td" style="font-size:0.6em; margin-top:14px; font-style:italic;">
+        "I automate SOC workflows so I have more time to <span class="tg">not</span> check the alerts."
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 3: AI ≠ LLM — ported exactly from BSides
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">Let's Clear This Up First</h2>
+  <p class="td" style="margin-bottom:14px;">When someone says "AI agent" — what do they actually mean?</p>
+
+  <div class="row gap-lg" style="margin-bottom:16px;">
+    <div class="glass col stack gap-sm" style="opacity:0.6; flex:1; max-width:420px;">
+      <h3 class="mono td" style="font-size:1.5em; text-align:center;">AI</h3>
+      <p class="tm" style="font-size:0.78em;">A marketing umbrella — not real intelligence.</p>
+      <p class="td" style="font-size:0.68em;">Computer vision, NLP, robotics, recommendation engines — all called "AI".</p>
+      <p class="td" style="font-size:0.68em; font-style:italic;">There is no "true AI" today. It's a label slapped on everything.</p>
+    </div>
+    <div style="display:flex; align-items:center;">
+      <p class="to b mono" style="font-size:2.2em;">&#8800;</p>
+    </div>
+    <div class="glass col border-cyan stack gap-sm" style="flex:1; max-width:420px;">
+      <h3 class="mono tc" style="font-size:1.5em; text-align:center;">LLM</h3>
+      <p style="font-size:0.78em;">Large Language Model.</p>
+      <p class="tm" style="font-size:0.68em;">When someone says <span class="tc b">"AI agent"</span>, they're selling you a <span class="tg b">workflow connected to an LLM</span>.</p>
+      <p class="tc" style="font-size:0.68em; font-style:italic;">This is the actual engine. Know the difference.</p>
+    </div>
+  </div>
+
+  <!-- Fragment: the critical insight -->
+  <div class="fragment fade-up glass border-orange" style="padding:14px 24px; max-width:880px; margin:0 auto;">
+    <p class="to b mono" style="font-size:0.72em; margin-bottom:6px;">&#9888; THE THING TO REMEMBER</p>
+    <p style="font-size:0.78em; line-height:1.6;">
+      LLMs are trained to <span class="to b">predict the most probable next token</span>. They don't "think."
+    </p>
+    <p class="td" style="font-size:0.72em; line-height:1.5; margin-top:6px;">
+      Throw too much at them without tight context &#8594; they <span class="tr b">hallucinate</span>, go on tangents, and make confident mistakes.
+    </p>
+    <p class="tg" style="font-size:0.72em; font-style:italic; margin-top:8px;">
+      Know what you're building with. Set accurate context. Keep the scope tight — or the machine will wander.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 4: SPECTRUM — THREE TYPES OF AGENTIC ARCHITECTURE
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan" style="margin-bottom:4px;">Three Ways to Put an LLM to Work</h2>
+  <p class="td" style="font-size:0.6em; margin-bottom:12px;">Who picks the next step?</p>
+
+  <div class="row gap-sm" style="align-items:flex-start; justify-content:center;">
+
+    <!-- ─── DETERMINISTIC ─── -->
+    <div class="glass border-blue" style="flex:1; max-width:370px; padding:14px 16px;">
+      <h3 class="mono tb" style="font-size:0.78em; letter-spacing:2px; margin-bottom:2px;">1 · DETERMINISTIC</h3>
+      <p class="td" style="font-size:0.5em; margin-bottom:10px;">the LLM lives inside a fixed playbook</p>
+
+      <svg viewBox="0 0 340 140" width="340" height="140" xmlns="http://www.w3.org/2000/svg" style="display:block; max-width:100%; margin-bottom:10px;">
+        <defs>
+          <marker id="s-ab" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#475569" stroke-width="1"/>
+          </marker>
+        </defs>
+        <rect x="5" y="56" width="65" height="28" rx="6" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="37" y="75" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="10">trigger</text>
+        <line x1="72" y1="70" x2="90" y2="70" stroke="#475569" stroke-width="1.2" marker-end="url(#s-ab)"/>
+        <rect x="93" y="56" width="50" height="28" rx="6" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="118" y="75" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="10">step</text>
+        <line x1="145" y1="70" x2="163" y2="70" stroke="#475569" stroke-width="1.2" marker-end="url(#s-ab)"/>
+        <rect x="166" y="52" width="60" height="36" rx="8" fill="rgba(0,240,255,0.1)" stroke="#00f0ff" stroke-width="2"/>
+        <text x="196" y="75" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">LLM</text>
+        <line x1="228" y1="70" x2="246" y2="70" stroke="#475569" stroke-width="1.2" marker-end="url(#s-ab)"/>
+        <rect x="249" y="56" width="65" height="28" rx="6" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="281" y="75" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="10">action</text>
+      </svg>
+
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tb">◆</span> Playbook decides every step</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tb">◆</span> LLM just fills in context</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:6px;"><span class="tb">◆</span> Breaks when reality goes off script</p>
+      <p class="td" style="font-size:0.42em; font-style:italic;">= brain in a supporting role</p>
+      <div style="border-top:1px solid rgba(96,165,250,0.2); margin-top:8px; padding-top:6px;">
+        <p class="mono" style="font-size:0.48em; text-align:center;"><span class="tb b">the playbook</span></p>
+      </div>
+    </div>
+
+    <!-- ─── AGENTIC ─── -->
+    <div class="glass border-cyan" style="flex:1; max-width:370px; padding:14px 16px;">
+      <h3 class="mono tc" style="font-size:0.78em; letter-spacing:2px; margin-bottom:2px;">2 · AGENTIC</h3>
+      <p class="td" style="font-size:0.5em; margin-bottom:10px;">the LLM decides, acts, and gets gated</p>
+
+      <svg viewBox="0 0 340 140" width="340" height="140" xmlns="http://www.w3.org/2000/svg" style="display:block; max-width:100%; margin-bottom:10px;">
+        <defs>
+          <marker id="s-ac2" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#94a3b8" stroke-width="1"/>
+          </marker>
+          <marker id="s-ar2" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#ff4757" stroke-width="1"/>
+          </marker>
+        </defs>
+        <circle cx="170" cy="38" r="28" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="2"/>
+        <text x="170" y="43" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">LLM</text>
+        <line x1="142" y1="38" x2="82" y2="38" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#s-ac2)"/>
+        <line x1="82" y1="50" x2="142" y2="50" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#s-ac2)"/>
+        <rect x="10" y="24" width="72" height="28" rx="5" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="46" y="43" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9">query SIEM</text>
+        <line x1="194" y1="22" x2="258" y2="12" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#s-ac2)"/>
+        <rect x="260" y="2" width="72" height="24" rx="5" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5"/>
+        <text x="296" y="18" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono,monospace" font-size="9">open ticket</text>
+        <line x1="170" y1="66" x2="170" y2="82" stroke="#ff4757" stroke-width="1.2" marker-end="url(#s-ar2)"/>
+        <g transform="translate(170,104)">
+          <rect x="-16" y="-16" width="32" height="32" rx="2" transform="rotate(45)" fill="rgba(255,71,87,0.06)" stroke="#ff4757" stroke-width="1.5"/>
+          <text x="0" y="5" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">gate</text>
+        </g>
+        <line x1="194" y1="104" x2="248" y2="104" stroke="#ff4757" stroke-width="1.2" marker-end="url(#s-ar2)"/>
+        <rect x="250" y="90" width="80" height="28" rx="5" fill="rgba(255,71,87,0.04)" stroke="rgba(255,71,87,0.4)" stroke-width="1.5"/>
+        <text x="290" y="108" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">isolate host</text>
+      </svg>
+
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tc">◆</span> LLM picks the tool, and when</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tc">◆</span> Acts through APIs, in guardrails</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:6px;"><span class="tc">◆</span> Human approves the risky moves</p>
+      <p class="td" style="font-size:0.42em; font-style:italic;">= brain in charge, gated</p>
+      <div style="border-top:1px solid rgba(0,240,255,0.2); margin-top:8px; padding-top:6px;">
+        <p class="mono" style="font-size:0.48em; text-align:center;"><span class="tc b">the LLM</span><span class="td">, human at the gate</span></p>
+      </div>
+    </div>
+
+    <!-- ─── AUTONOMOUS ─── -->
+    <div class="glass border-green" style="flex:1; max-width:370px; padding:14px 16px;">
+      <h3 class="mono tg" style="font-size:0.78em; letter-spacing:2px; margin-bottom:2px;">3 · AUTONOMOUS</h3>
+      <p class="td" style="font-size:0.5em; margin-bottom:10px;">approved classes run end to end</p>
+
+      <svg viewBox="0 0 340 140" width="340" height="140" xmlns="http://www.w3.org/2000/svg" style="display:block; max-width:100%; margin-bottom:10px;">
+        <defs>
+          <marker id="s-ag2" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1"/>
+          </marker>
+          <marker id="s-ap2" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <path d="M0,0 L6,2.5 L0,5" fill="none" stroke="#ff4757" stroke-width="1"/>
+          </marker>
+        </defs>
+        <circle cx="65" cy="40" r="28" fill="rgba(57,255,20,0.06)" stroke="#39ff14" stroke-width="2"/>
+        <text x="65" y="45" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">LLM</text>
+        <line x1="93" y1="40" x2="148" y2="40" stroke="#39ff14" stroke-width="1.5" marker-end="url(#s-ag2)"/>
+        <text x="120" y="34" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">act</text>
+        <rect x="150" y="16" width="160" height="50" rx="6" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="230" y="36" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="10" font-weight="bold">EVIDENCE LOG</text>
+        <text x="230" y="52" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="8">every action · every verdict</text>
+        <line x1="230" y1="66" x2="230" y2="100" stroke="#ff4757" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#s-ap2)"/>
+        <text x="248" y="86" text-anchor="start" fill="#475569" font-family="JetBrains Mono,monospace" font-size="8">sample</text>
+        <circle cx="230" cy="118" r="18" fill="rgba(255,71,87,0.06)" stroke="#ff4757" stroke-width="1.5"/>
+        <text x="230" y="122" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="10">QA</text>
+        <path d="M212,118 Q120,140 65,68" fill="none" stroke="#39ff14" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#s-ag2)"/>
+        <text x="120" y="130" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="9">tune</text>
+      </svg>
+
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tg">◆</span> Runs the whole class end to end</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:3px;"><span class="tg">◆</span> Every step leaves evidence</p>
+      <p class="tm" style="font-size:0.48em; margin-bottom:6px;"><span class="tg">◆</span> Humans sample, hold the kill switch</p>
+      <p class="td" style="font-size:0.42em; font-style:italic;">= brain trusted with a class of work</p>
+      <div style="border-top:1px solid rgba(57,255,20,0.2); margin-top:8px; padding-top:6px;">
+        <p class="mono" style="font-size:0.48em; text-align:center;"><span class="tg b">the LLM</span><span class="td">, humans audit</span></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 5: WHY LLMs ALONE ARE NOT AGENTS — ported from BSides
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">Why LLMs Alone Are Not Agents</h2>
+  <p class="td" style="margin-bottom:18px;">A language model generates text. That's it — <span class="tc b">tokens, not actions</span>.</p>
+
+  <div class="row gap-lg" style="justify-content:center; align-items:flex-start;">
+
+    <!-- Left: the agentic loop with X mark -->
+    <div class="glass border-cyan" style="padding:20px 24px; flex:0 0 440px;">
+      <svg viewBox="0 0 380 220" width="380" height="220" xmlns="http://www.w3.org/2000/svg" style="display:block; max-width:100%;">
+        <defs>
+          <marker id="lp-c" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#00f0ff" stroke-width="1.2"/>
+          </marker>
+          <marker id="lp-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1.2"/>
+          </marker>
+          <marker id="lp-y" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#fbbf24" stroke-width="1.2"/>
+          </marker>
+          <marker id="lp-m" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#a78bfa" stroke-width="1.2"/>
+          </marker>
+        </defs>
+
+        <!-- PERCEIVE box (top center) -->
+        <rect x="130" y="8" width="120" height="38" rx="8" fill="rgba(0,240,255,0.08)" stroke="#00f0ff" stroke-width="2"/>
+        <text x="190" y="32" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">PERCEIVE</text>
+
+        <!-- Arrow down: Perceive → Select -->
+        <line x1="190" y1="46" x2="190" y2="72" stroke="#00f0ff" stroke-width="1.5" marker-end="url(#lp-c)"/>
+
+        <!-- SELECT ACTION box (center) -->
+        <rect x="120" y="75" width="140" height="38" rx="8" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="2"/>
+        <text x="190" y="99" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">SELECT ACTION</text>
+
+        <!-- X mark — LLM stops here -->
+        <text x="270" y="100" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="22" font-weight="bold">&#10005;</text>
+        <text x="295" y="90" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">a language</text>
+        <text x="295" y="102" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">model stops</text>
+        <text x="295" y="114" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="9">here</text>
+
+        <!-- Arrow down: Select → Execute -->
+        <line x1="190" y1="113" x2="190" y2="138" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#lp-m)" stroke-dasharray="5,3"/>
+
+        <!-- EXECUTE TOOL box (bottom center) -->
+        <rect x="125" y="141" width="130" height="38" rx="8" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="190" y="165" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="11" opacity="0.5">EXECUTE TOOL</text>
+
+        <!-- OBSERVE RESULT box (left) -->
+        <rect x="10" y="75" width="95" height="38" rx="8" fill="rgba(57,255,20,0.06)" stroke="#39ff14" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="57" y="99" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="10" opacity="0.5">OBSERVE</text>
+
+        <!-- Curved arrow: Execute → Observe (left side) -->
+        <path d="M125,165 Q57,165 57,113" fill="none" stroke="#39ff14" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#lp-g)"/>
+
+        <!-- Curved arrow: Observe → Perceive (up) -->
+        <path d="M57,75 Q57,27 130,27" fill="none" stroke="#00f0ff" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#lp-c)"/>
+
+        <!-- Dashed overlay on bottom half to show it's unreachable -->
+        <text x="190" y="210" text-anchor="middle" fill="#475569" font-family="Inter,sans-serif" font-size="10" font-style="italic">needs tools + runtime to complete the loop</text>
+      </svg>
+    </div>
+
+    <!-- Right: three limitations -->
+    <div class="stack gap-sm" style="max-width:380px;">
+      <div class="glass glass-sm border-red" style="padding:16px 20px;">
+        <h3 class="tr" style="font-size:0.85em; margin-bottom:4px;">No native ability to act</h3>
+        <p class="tm" style="font-size:0.62em;">Can't read files, query APIs, or run code. It outputs text — someone else has to execute.</p>
+      </div>
+      <div class="glass glass-sm border-red" style="padding:16px 20px;">
+        <h3 class="tr" style="font-size:0.85em; margin-bottom:4px;">Cannot persist state</h3>
+        <p class="tm" style="font-size:0.62em;">No memory beyond its context window. Every call starts from scratch unless you build the plumbing.</p>
+      </div>
+      <div class="glass glass-sm border-red" style="padding:16px 20px;">
+        <h3 class="tr" style="font-size:0.85em; margin-bottom:4px;">Cannot observe results</h3>
+        <p class="tm" style="font-size:0.62em;">It can't see what happened after its output was used. No feedback loop without an orchestrator.</p>
+      </div>
+      <p class="td" style="font-size:0.6em; font-style:italic; margin-top:4px;">This is why you need the agent wrapper — <span class="tc">tools + memory + loop</span></p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 5: THE AGENTIC LOOP (ReAct) — ported from BSides, generalized
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">The Agentic Loop</h2>
+  <p class="td" style="margin-bottom:20px;">What makes an agent an agent — the <span class="tc b">ReAct</span> pattern (Reason + Act)</p>
+  <div class="row gap-lg" style="justify-content:center;">
+    <div class="glass col center border-blue" style="max-width:260px; padding:24px;">
+      <p class="mono tb b" style="font-size:1.3em;">01</p>
+      <h3 class="mono tb" style="margin-top:6px;">OBSERVE</h3>
+      <p class="tm" style="font-size:0.62em; margin-top:8px;">Read incoming data, API responses, error messages</p>
+    </div>
+    <div class="arrow">&#8594;</div>
+    <div class="glass col center border-cyan" style="max-width:260px; padding:24px;">
+      <p class="mono tc b" style="font-size:1.3em;">02</p>
+      <h3 class="mono tc" style="margin-top:6px;">THINK</h3>
+      <p class="tm" style="font-size:0.62em; margin-top:8px;">Decide the next action, pick the right tool, plan strategy</p>
+    </div>
+    <div class="arrow">&#8594;</div>
+    <div class="glass col center border-green" style="max-width:260px; padding:24px;">
+      <p class="mono tg b" style="font-size:1.3em;">03</p>
+      <h3 class="mono tg" style="margin-top:6px;">ACT</h3>
+      <p class="tm" style="font-size:0.62em; margin-top:8px;">Call an API, query a database, check a service, write a verdict</p>
+    </div>
+  </div>
+  <p class="mono td" style="font-size:1.4em; text-align:center; margin-top:4px;">&#8635;</p>
+  <p class="tm" style="font-size:0.7em; text-align:center;">The LLM doesn't just answer — it decides what to <span class="tc b">do</span> next.</p>
+  <p class="td" style="font-size:0.58em; text-align:center; margin-top:6px; font-style:italic;">Each iteration costs time and tokens. Guardrails keep the loop from running forever.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 6: AGENT ANATOMY — ported from BSides, generalized
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">What the Brain Needs Around It</h2>
+  <p class="td" style="margin-bottom:8px;">Every practical agent is the same small assembly</p>
+  <div class="stack gap-sm center">
+    <!-- TRIGGER -->
+    <div class="glass glass-tight border-orange" style="width:260px;">
+      <div class="row gap-sm" style="align-items:center; justify-content:center;">
+        <span style="font-size:1.1em;">&#9889;</span>
+        <div><h3 class="mono to" style="font-size:0.8em;">TRIGGER</h3><p class="tm" style="font-size:0.55em;">Wakes the agent</p></div>
+      </div>
+    </div>
+    <p class="mono td" style="font-size:0.8em;">&#8595;</p>
+    <!-- MIDDLE: TOOLS ← LLM → MEMORY -->
+    <div class="row gap-md" style="align-items:center;">
+      <div class="stack gap-xs center">
+        <div class="glass glass-tight border-blue" style="width:200px;">
+          <div class="row gap-sm" style="align-items:center; justify-content:center;">
+            <span style="font-size:1em;">&#128295;</span>
+            <div><h3 class="mono tb" style="font-size:0.8em;">TOOLS</h3><p class="tm" style="font-size:0.55em;">The Hands</p></div>
+          </div>
+        </div>
+        <p class="tb" style="font-size:0.5em; font-style:italic;">APIs, databases, services</p>
+      </div>
+      <span class="mono td" style="font-size:0.9em;">&#8592;</span>
+      <div class="glass border-cyan node-hero float" style="padding:20px 36px;">
+        <h3 class="mono tc" style="font-size:1.4em;">LLM</h3>
+        <p class="tc" style="font-size:0.65em;">The Brain</p>
+      </div>
+      <span class="mono td" style="font-size:0.9em;">&#8594;</span>
+      <div class="stack gap-xs center">
+        <div class="glass glass-tight border-purple" style="width:200px;">
+          <div class="row gap-sm" style="align-items:center; justify-content:center;">
+            <span style="font-size:1em;">&#128218;</span>
+            <div><h3 class="mono tp" style="font-size:0.8em;">MEMORY</h3><p class="tm" style="font-size:0.55em;">Context</p></div>
+          </div>
+        </div>
+        <p class="tp" style="font-size:0.5em; font-style:italic;">Knowledge base, past actions</p>
+      </div>
+    </div>
+    <p class="mono td" style="font-size:0.8em;">&#8595;</p>
+    <!-- HUMAN -->
+    <div class="glass glass-tight border-green" style="width:260px;">
+      <div class="row gap-sm" style="align-items:center; justify-content:center;">
+        <span style="font-size:1.1em;">&#128100;</span>
+        <div><h3 class="mono tg" style="font-size:0.8em;">HUMAN</h3><p class="tm" style="font-size:0.55em;">Owns the judgment</p></div>
+      </div>
+    </div>
+  </div>
+  <p class="td" style="font-size:0.56em; font-style:italic; text-align:center; margin-top:10px;">Any system without an API sits beyond the agent's reach.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 7: TERMINATOR — ported exactly from BSides
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <div class="row gap-lg" style="align-items:center; justify-content:center;">
+    <div style="flex-shrink:0;">
+      <img src="img/terminator.png" alt="Terminator thumbs up" style="width:380px; border-radius:16px; border:2px solid rgba(255,140,0,0.3); box-shadow: 0 0 40px rgba(255,140,0,0.15);">
+    </div>
+    <div class="stack gap-sm" style="max-width:400px;">
+      <h2 class="to glow-orange" style="font-size:1.5em;">Totally fine.<br>Nothing to worry about.</h2>
+      <p class="td" style="margin-top:8px;">Fully autonomous AI is <span class="tg b">definitely</span> not a problem.</p>
+      <p class="td" style="margin-top:4px; font-size:0.7em; font-style:italic;">(Everything I'll show you lives in the <span class="tc b">agentic</span> zone. Relax.)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 8: CHATBOT vs AGENT — NEW
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">Chatbot vs Agent</h2>
+  <p class="td" style="margin-bottom:16px;">Same LLM, completely different architecture</p>
+
+  <div class="row gap-lg" style="justify-content:center; align-items:flex-start;">
+
+    <!-- CHATBOT side -->
+    <div class="glass border-red" style="flex:1; max-width:400px; padding:20px 24px;">
+      <h3 class="mono tr" style="font-size:0.9em; text-align:center; margin-bottom:14px;">&#128172; CHATBOT</h3>
+      <div class="stack gap-xs">
+        <div class="flow-step" style="background:rgba(255,71,87,0.06); border:1px solid rgba(255,71,87,0.2);">
+          <span class="tr b">1</span> <span>Human asks a question</span>
+        </div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step" style="background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.2);">
+          <span class="tc b">2</span> <span>LLM generates text response</span>
+        </div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step" style="background:rgba(255,71,87,0.06); border:1px solid rgba(255,71,87,0.2);">
+          <span class="tr b">3</span> <span>Done. Human reads output.</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,71,87,0.2); margin-top:12px; padding-top:10px;">
+        <p class="td" style="font-size:0.58em; text-align:center; font-style:italic;">One shot. No tools. No loop.</p>
+        <p class="tr mono b" style="font-size:0.7em; text-align:center; margin-top:4px;">Q &#8594; A</p>
+      </div>
+    </div>
+
+    <!-- VS divider -->
+    <div style="display:flex; align-items:center; padding-top:80px;">
+      <p class="to b mono" style="font-size:1.6em;">vs</p>
+    </div>
+
+    <!-- AGENT side -->
+    <div class="glass border-green" style="flex:1; max-width:400px; padding:20px 24px;">
+      <h3 class="mono tg" style="font-size:0.9em; text-align:center; margin-bottom:14px;">&#129302; AGENT</h3>
+      <div class="stack gap-xs">
+        <div class="flow-step" style="background:rgba(57,255,20,0.06); border:1px solid rgba(57,255,20,0.2);">
+          <span class="tg b">1</span> <span>Trigger fires (ticket, email, alert)</span>
+        </div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step" style="background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.2);">
+          <span class="tc b">2</span> <span>LLM thinks: "What tool do I need?"</span>
+        </div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step" style="background:rgba(96,165,250,0.06); border:1px solid rgba(96,165,250,0.2);">
+          <span class="tb b">3</span> <span>Calls API, gets results back</span>
+        </div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step" style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2);">
+          <span class="tp b">4</span> <span>Observes &#8594; Decides &#8594; Acts again</span>
+        </div>
+        <div class="flow-arrow tc" style="font-size:0.9em;">&#8635; loop</div>
+        <div class="flow-step" style="background:rgba(57,255,20,0.06); border:1px solid rgba(57,255,20,0.2);">
+          <span class="tg b">N</span> <span>Delivers verdict + evidence</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(57,255,20,0.2); margin-top:12px; padding-top:10px;">
+        <p class="td" style="font-size:0.58em; text-align:center; font-style:italic;">Multi-step. Tool-using. Self-correcting.</p>
+        <p class="tg mono b" style="font-size:0.7em; text-align:center; margin-top:4px;">Observe &#8594; Think &#8594; Act &#8594; &#8635;</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 9: DEMO ARCHITECTURE — NEW
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan" style="margin-bottom:4px;">What I Built for Today</h2>
+  <p class="td" style="font-size:0.6em; margin-bottom:16px;">Everything runs locally in Docker — one script to start it all</p>
+
+  <div style="max-width:920px; margin:0 auto;">
+    <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+      <defs>
+        <marker id="da-c" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#00f0ff" stroke-width="1.2"/>
+        </marker>
+        <marker id="da-b" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#60a5fa" stroke-width="1.2"/>
+        </marker>
+        <marker id="da-g" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#39ff14" stroke-width="1.2"/>
+        </marker>
+        <marker id="da-p" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#a78bfa" stroke-width="1.2"/>
+        </marker>
+        <marker id="da-o" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#ff8c00" stroke-width="1.2"/>
+        </marker>
+        <marker id="da-r" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+          <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#ff4757" stroke-width="1.2"/>
+        </marker>
+      </defs>
+
+      <!-- ═══ DEMO UI (top left) ═══ -->
+      <rect x="30" y="30" width="160" height="60" rx="12" fill="rgba(57,255,20,0.06)" stroke="#39ff14" stroke-width="2"/>
+      <text x="110" y="58" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="14" font-weight="bold">Demo UI</text>
+      <text x="110" y="78" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Web Frontend</text>
+
+      <!-- Arrow: Demo UI → n8n -->
+      <line x1="190" y1="60" x2="308" y2="60" stroke="#39ff14" stroke-width="1.5" marker-end="url(#da-g)"/>
+      <text x="250" y="52" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="9">submit</text>
+
+      <!-- ═══ n8n (center hub) ═══ -->
+      <rect x="310" y="25" width="180" height="75" rx="14" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="3"/>
+      <text x="400" y="58" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono,monospace" font-size="18" font-weight="bold">n8n</text>
+      <text x="400" y="80" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">Orchestrator</text>
+
+      <!-- Arrow: n8n → LLM -->
+      <line x1="490" y1="60" x2="608" y2="60" stroke="#00f0ff" stroke-width="1.5" marker-end="url(#da-c)"/>
+      <text x="550" y="52" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="9">reason</text>
+
+      <!-- ═══ LLM (top right) ═══ -->
+      <rect x="610" y="25" width="180" height="75" rx="14" fill="rgba(0,240,255,0.06)" stroke="#00f0ff" stroke-width="3"/>
+      <text x="700" y="55" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="18" font-weight="bold">DeepSeek</text>
+      <text x="700" y="80" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="11">The Brain (API)</text>
+
+      <!-- Arrow: n8n → MCP Server -->
+      <line x1="400" y1="100" x2="400" y2="168" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#da-p)"/>
+      <text x="415" y="140" text-anchor="start" fill="#475569" font-family="JetBrains Mono,monospace" font-size="9">calls tools</text>
+
+      <!-- ═══ MCP Server (center) ═══ -->
+      <rect x="310" y="170" width="180" height="65" rx="12" fill="rgba(167,139,250,0.06)" stroke="#a78bfa" stroke-width="2"/>
+      <text x="400" y="198" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="14" font-weight="bold">MCP Server</text>
+      <text x="400" y="220" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Tool Gateway</text>
+
+      <!-- Arrow: MCP → ChromaDB (left) -->
+      <line x1="310" y1="202" x2="198" y2="202" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#da-o)"/>
+      <text x="255" y="194" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="9">query</text>
+
+      <!-- ═══ ChromaDB (center left) ═══ -->
+      <rect x="30" y="172" width="168" height="60" rx="12" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="2"/>
+      <text x="114" y="198" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono,monospace" font-size="13" font-weight="bold">ChromaDB</text>
+      <text x="114" y="218" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Knowledge Base</text>
+
+      <!-- Arrow: MCP → Problem Server (right) -->
+      <line x1="490" y1="202" x2="608" y2="202" stroke="#ff4757" stroke-width="1.5" marker-end="url(#da-r)"/>
+      <text x="550" y="194" text-anchor="middle" fill="#475569" font-family="JetBrains Mono,monospace" font-size="9">metrics</text>
+
+      <!-- ═══ Problem Server (center right) ═══ -->
+      <rect x="610" y="170" width="200" height="65" rx="12" fill="rgba(255,71,87,0.06)" stroke="#ff4757" stroke-width="2"/>
+      <text x="710" y="196" text-anchor="middle" fill="#ff4757" font-family="JetBrains Mono,monospace" font-size="13" font-weight="bold">Problem Server</text>
+      <text x="710" y="218" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Real issues, real metrics</text>
+
+      <!-- ═══ Bottom row: what each tool does ═══ -->
+      <!-- Demo A -->
+      <rect x="30" y="290" width="240" height="75" rx="10" fill="rgba(0,240,255,0.04)" stroke="rgba(0,240,255,0.3)" stroke-width="1.5"/>
+      <text x="150" y="316" text-anchor="middle" fill="#00f0ff" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">Demo A: Email Analyst</text>
+      <text x="150" y="336" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Paste phishing email</text>
+      <text x="150" y="352" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Agent investigates + verdict</text>
+
+      <!-- Demo E -->
+      <rect x="310" y="290" width="240" height="75" rx="10" fill="rgba(57,255,20,0.04)" stroke="rgba(57,255,20,0.3)" stroke-width="1.5"/>
+      <text x="430" y="316" text-anchor="middle" fill="#39ff14" font-family="JetBrains Mono,monospace" font-size="12" font-weight="bold">Demo E: Helpdesk Triage</text>
+      <text x="430" y="336" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Submit IT ticket</text>
+      <text x="430" y="352" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Agent checks REAL server + triage</text>
+
+      <!-- Design callout -->
+      <rect x="590" y="290" width="240" height="75" rx="10" fill="rgba(167,139,250,0.04)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>
+      <text x="710" y="312" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono,monospace" font-size="11" font-weight="bold">THE AGENTIC LOOP</text>
+      <text x="710" y="332" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Observe &#8594; Think &#8594; Act &#8594; &#8635;</text>
+      <text x="710" y="352" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="10">Watch it happen in real time</text>
+
+      <!-- Connecting lines from demos to architecture -->
+      <line x1="150" y1="290" x2="150" y2="232" stroke="rgba(0,240,255,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="430" y1="290" x2="430" y2="235" stroke="rgba(57,255,20,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 10: DEMO TRANSITION — NEW
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="mono td" style="font-size:0.6em; letter-spacing:5px;">// SWITCHING TO LIVE DEMO</p>
+  <div style="height:16px;"></div>
+  <h1 class="tg glow-green" style="font-size:3.2em;">LIVE DEMO</h1>
+  <p class="tm" style="font-size:1em; margin-top:16px;">Two agents. Real infrastructure. No mocks.</p>
+  <div style="height:24px;"></div>
+  <div class="row gap-lg" style="justify-content:center;">
+    <div class="glass border-cyan" style="padding:16px 28px; text-align:center;">
+      <h3 class="mono tc" style="font-size:0.85em;">Demo A</h3>
+      <p class="tm" style="font-size:0.65em; margin-top:4px;">AI Email Analyst</p>
+      <p class="td" style="font-size:0.55em; margin-top:4px;">Phishing email &#8594; Investigation &#8594; Verdict</p>
+    </div>
+    <div class="glass border-green" style="padding:16px 28px; text-align:center;">
+      <h3 class="mono tg" style="font-size:0.85em;">Demo E</h3>
+      <p class="tm" style="font-size:0.65em; margin-top:4px;">IT Helpdesk Triage</p>
+      <p class="td" style="font-size:0.55em; margin-top:4px;">Ticket &#8594; Real server check &#8594; Triage</p>
+    </div>
+  </div>
+  <div style="height:20px;"></div>
+  <div class="terminal" style="max-width:520px; border-color:rgba(57,255,20,0.3);">
+    <p><span class="p">$</span> ./start.sh</p>
+    <p class="c"># Docker Compose up — all containers healthy</p>
+    <p><span class="p">$</span> <span class="blink">&#9608;</span></p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 11: WHAT THIS MEANS + CLOSE — NEW
+     ══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="tc glow-cyan">What This Means for Your Business</h2>
+  <p class="td" style="margin-bottom:18px;">Three takeaways from today</p>
+
+  <div class="stack gap-md">
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(96,165,250,0.25);">
+      <div class="step-num" style="background:var(--blue); color:var(--bg);">1</div>
+      <div>
+        <p class="b" style="font-size:0.85em;"><span class="tb">Agents are not magic</span> — they're loops with tools</p>
+        <p class="td" style="font-size:0.6em; margin-top:4px;">LLM + APIs + guardrails + human oversight. That's the whole recipe.</p>
+      </div>
+    </div>
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(0,240,255,0.25);">
+      <div class="step-num" style="background:var(--cyan); color:var(--bg);">2</div>
+      <div>
+        <p class="b" style="font-size:0.85em;"><span class="tc">Start with the process</span>, not the technology</p>
+        <p class="td" style="font-size:0.6em; margin-top:4px;">Map what your team actually does. Pick the repetitive, well-defined tasks first.</p>
+      </div>
+    </div>
+    <div class="glass glass-sm row gap-md" style="align-items:center; border-color:rgba(57,255,20,0.25);">
+      <div class="step-num" style="background:var(--green); color:var(--bg);">3</div>
+      <div>
+        <p class="b" style="font-size:0.85em;"><span class="tg">You can build this today</span> — with open-source tools</p>
+        <p class="td" style="font-size:0.6em; margin-top:4px;">n8n, ChromaDB, any LLM API. No vendor lock-in. No six-figure license.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:20px;"></div>
+
+  <div class="fragment fade-up glass border-orange" style="padding:16px 24px; max-width:700px; margin:0 auto; text-align:center;">
+    <p class="to b mono" style="font-size:0.75em;">SESSION 2 PREVIEW</p>
+    <p class="tm" style="font-size:0.72em; margin-top:6px;">We go deeper — build your own agent from scratch, hands-on.</p>
+  </div>
+
+  <div style="height:16px;"></div>
+  <div style="text-align:center;">
+    <p style="font-size:0.95em; font-weight:600;">Moiz Lakdawala</p>
+    <div style="margin-top:10px; display:flex; gap:20px; font-size:0.65em; justify-content:center; flex-wrap:wrap;">
+      <span><span class="tg b mono">MEDIUM</span> <span class="td">@moizl599</span></span>
+      <span><span class="tb b mono">LINKEDIN</span> <span class="td">/abdulmoiz-lakdawala</span></span>
+      <span><span class="tp b mono">GITHUB</span> <span class="td">/moizl599</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SLIDE 12: THANK YOU — ported from BSides
+     ══════════════════════════════════════════════════════════════ -->
+<section class="center">
+  <p class="mono td" style="font-size:0.6em; letter-spacing:5px;">// EOF</p>
+  <div style="height:8px;"></div>
+  <h1 class="tg glow-green" style="font-size:2.6em;">THANK YOU</h1>
+  <div style="height:8px;"></div>
+  <p style="font-size:1.1em; font-weight:600;">Moiz Lakdawala</p>
+  <p class="td" style="font-size:0.78em; margin-top:4px;">FCC Network Systems Cyber Security Forum</p>
+  <div style="height:20px;"></div>
+
+  <div style="display:flex; align-items:center; justify-content:center; gap:36px; flex-wrap:wrap;">
+    <!-- QR Code -->
+    <div style="text-align:center;">
+      <img src="img/qr-lab.png" alt="Lab QR Code"
+           style="width:180px; height:180px; border-radius:10px; border:2px solid var(--cyan);
+                  box-shadow:0 0 24px rgba(0,240,255,0.25);">
+    </div>
+    <!-- CTA text -->
+    <div style="text-align:left; max-width:380px;">
+      <h2 class="tc glow-cyan" style="font-size:1.4em; margin:0;">Try the Lab</h2>
+      <p class="td" style="font-size:0.72em; margin-top:8px; line-height:1.5;">
+        Scan the QR code or visit the repo to spin up<br>
+        the full <span class="tg b">Agentic AI demo</span> on your laptop.
+      </p>
+      <p class="mono" style="font-size:0.56em; margin-top:10px;">
+        <span class="tc">github.com/moizl599/</span><span class="tg b">Bsides2026_Agentic_Soc_Lab</span>
+      </p>
+      <p class="mono td" style="font-size:0.48em; margin-top:2px;">
+        └── FCC-presentation/
+      </p>
+      <div style="margin-top:14px; display:flex; gap:18px; font-size:0.6em; flex-wrap:wrap;">
+        <span><span class="tg b mono">MEDIUM</span> <span class="td">@moizl599</span></span>
+        <span><span class="tb b mono">LINKEDIN</span> <span class="td">/abdulmoiz-lakdawala</span></span>
+        <span><span class="tp b mono">GITHUB</span> <span class="td">/moizl599</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:12px;"></div>
+  <div style="display:flex; align-items:center; justify-content:center; gap:16px;">
+    <h2 class="tg glow-green" style="font-size:1.5em; margin:0;">Questions?</h2>
+    <img src="img/peace-out.gif" alt="" class="fragment fade-in"
+         style="width:100px; height:100px; border-radius:10px; object-fit:cover;">
+  </div>
+</section>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<script>
+// ─── tsParticles ───
+tsParticles.load("particles-js", {
+  particles: {
+    number: { value: 40, density: { enable: true, area: 900 } },
+    color: { value: ["#00f0ff","#39ff14","#a78bfa"] },
+    opacity: { value: 0.15 },
+    size: { value: { min: 1, max: 2.5 } },
+    move: { enable: true, speed: 0.4, direction: "none", outModes: "out" },
+    links: { enable: true, distance: 140, color: "#00f0ff", opacity: 0.06, width: 1 }
+  },
+  detectRetina: true
+});
+
+// ─── Reveal.js ───
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  width: 1280,
+  height: 720,
+  margin: 0,
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  backgroundTransition: 'fade',
+  center: false,
+  controlsTutorial: false,
+});
+
+// ─── GSAP entrance animations ───
+Reveal.on('slidechanged', event => {
+  const slide = event.currentSlide;
+  // Animate glass cards
+  const cards = slide.querySelectorAll('.glass, .node, .arch-node');
+  if (cards.length) {
+    gsap.from(cards, {
+      y: 30, opacity: 0, duration: 0.5,
+      stagger: 0.08, ease: 'power2.out',
+      clearProps: 'all'
+    });
+  }
+  // Animate headings
+  const h = slide.querySelectorAll('h1, h2');
+  if (h.length) {
+    gsap.from(h, {
+      x: -30, opacity: 0, duration: 0.6,
+      ease: 'power3.out', clearProps: 'all'
+    });
+  }
+  // Animate flow steps
+  const steps = slide.querySelectorAll('.flow-step');
+  if (steps.length) {
+    gsap.from(steps, {
+      x: -20, opacity: 0, duration: 0.4,
+      stagger: 0.1, ease: 'power2.out',
+      clearProps: 'all'
+    });
+  }
+  // Animate SVGs
+  const svgs = slide.querySelectorAll('svg');
+  if (svgs.length) {
+    gsap.from(svgs, {
+      scale: 0.95, opacity: 0, duration: 0.7,
+      ease: 'power2.out', clearProps: 'all'
+    });
+  }
+});
+</script>
+
+</body>
+</html>
